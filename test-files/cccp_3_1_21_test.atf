@@ -1,0 +1,89 @@
+&P425538 = CCP 3.1.21 (http://ccp.yale.edu/P425538) = Sm.683
+#project: ccpo
+#atf: lang akk-x-stdbab
+#atf: use unicode
+#atf: use math
+@tablet
+
+$(obverse)
+1'. !zz [...] x# [...]
+#lem: u; u; u
+
+#tr.en: […]
+2'. !bs [* U₄.16.KAM AN].GE₆ [GAR LUGAL UŠ₂-ma]
+#lem: X; attallû[eclipse]N; iššakkan[take place]V; šar[king]N; imâtma[die]V
+
+#tr.en: [“If an ecl]ipse [occurs on the sixteenth day, the king will die,]
+#note: The restorations of this and the following line are based on the assumption that they = @i{EAE} XXI § II, 3 (Rochberg 1988: 236).
+3'. ($___$) !bs [KUR] i#-har#-ru?#-[ub na-me-e KUR₂ GIŠ.GAN]
+#lem: mātu[land]N; iharrub[be(come) deserted]V; namê[deserted land]N; nakri[enemy]N; +mahāṣu[beat]V$imahhaṣ
+
+#tr.en: [the land] will become deser[ted, (and) the enemy will smite(sic.!) the steppe”] (= @i{EAE} XXI § II, 3).
+#note: For the tentative restoration of @akk{GIŠ.GAN}, see the note to the next line.
+4'. ($___$) !zz [...] !bs SAG₂(|PA.GAN|) !cm :# GIŠ#.GAN#
+#lem: u; +mahāṣu[beat//beating]V'N$; +mahāṣu[beat//beating]V'N$
+
+
+#tr.en: [GIŠ.GAN] is (the sign) PA.GAN, (whose name is) @i{ugula ḫeḫû}. “Ditto” (i.e., GIŠ.GAN) means “to beat”.
+#note: The gloss at the beginning probably provides the reading of the sign @akk{PA.GAN} as @akk{MIN<(u-gu-la)> he-hu-u₂} (see Gong @i{Die Namen der Keilschriftzeichen}, @i{AOAT} 268 [2000]), p. 170.
+6'. ($___$) !bs [...] !cm : ka-ma-su
+#lem: u; +kamāsu[gather in//gathering in]V'N$
+
+#tr.en: […] means “@i{to gather}”
+#note: Compare @i{EAE} XXI §II, 4 (Rochberg 1988: 236), although the equation of @i{šapāku}, “to heap up”, with @i{kamāsu} A, “to gather”, is not otherwise attested.
+7'. !bs [* U₄].21#.KAM₂ AN.GE₆ GAR hi-ṣib A.AB.BA ZAH₂-ma
+#lem: X; attallû[eclipse]N; iššakkan[take place]V; hiṣib[(abundant) yield]N; tâmti[sea]N; ihalliqma[be destroyed]V
+
+#tr.en: [“If] on the [twenty-first] day an eclipse occurs, the produce of the sea will disappear,
+#note: This and the following line = @i{EAE} XXI § II, 5 (Rochberg 1988: 236).
+8'. ($___$) !bs [(...)] ap#-pa-ru i-EZEN qin-nu MUŠEN UŠ-šu
+#lem: u; +appāru[reed-bed]N$; X; +qinnu[nest]N$; iṣṣūru[bird]N; +qanānu[nest]V$iqannunšu
+
+#tr.en: marsh will ... [the sea], the bird will nest (there)” (= @i{EAE} XXI § II, 5).
+#note: In light of the commentary in the following two lines, the sign sequence @akk{i-EZEN} is difficult to explain: for discussion see Rochberg (1988: 236 Textual note 5). The explanation is probably based on a parsing of the signs as @i{i-mú}.
+9'. ($___$) !cm [A.AB.BA] ap#-pa-ru im-mi qin-nu iṣ-ṣu-ri i-qa-an-nun-šu₂
+#lem: tâmti[sea]N; appāru[reed-bed]N; +ewû[become]V$immi; qinnu[nest]N; iṣṣūri[bird]N; +qanānu[nest]V$iqannunšu
+
+#tr.en: [(means) “the sea] will become marsh, the bird will nest (there).”
+10'. ($___$) !bs [e-mu]-u₂# !cm : ma-ša₂-lu : !bs UŠ !cm : qa-na-nu
+#lem: emû[becoming]'N; mašālu[equalling]'N; +qanānu[nest//nesting]V'N$; +qanānu[nest//nesting]V'N$
+
+#tr.en: [(because) “to becom]e” means “to equal”; “to nest (Sumerian)” means “to nest (Akkadian)”
+#note: The equation of @i{emû} with @i{mašālu} is also attested in the commentary on @i{Ludlul bēl nēmeqi} (@i{CCP} 1.3 o 13'); @akk{UŠ} is equated with @i{qanānu} in the lexical list @i{An-ta-gál} = @i{šaqû} D 74f (reference from @i{CAD} Q 80b, where the present line is read as @akk{UŠ# : ma-šá-lu : UŠ : qa-na-nu}, which is epigraphically impossible).
+$(reverse)
+11'. !bs [*] U₄.20!(21).KAM AN.GE₆ GAR ina {iti}NE {d}IŠKUR
+#lem: X; attallû[eclipse]N; iššakkan[take place]V; ina[in]PRP; Abu[1]MN; Adad[1]DN
+
+#tr.en: [“If] an eclipse occurs on the twenty-first day, in month V Adad
+12'. ($___$) !bs [GU₃-šu₂] ŠUB{+di}-ma DINGIR GU₇
+#lem: rigimšu[voice]N; inaddima[raise]V; ilu[god]N; +akālu[eat]V$ikkal
+
+#tr.en: will th[under] and the god will devastate;
+13'. ($___$) !bs [EGIR] MU# {d}IŠKUR MAŠ₂.ANŠE RA{+iṣ}
+#lem: arki[after]PRP; šatti[year]N; Adad[1]DN; būli[livestock]N; irahhiṣ[devastate]V
+
+#tr.en: [after the yea]r Adad will smite the herds” (= @i{EAE} XXI §IV, 4).
+14'. ($___$) !bs [{iti}NE !cm :] ITI# šu-a-tu₄ : !bs NE !cm : šu-a-tu₄
+#lem: Abu[1]MN; arhu[month]N; +šuātu[that//that]IP'AJ$; +šuātu[that//that]IP'AJ$; +šuātu[that//that]IP'AJ$
+
+#tr.en: [“ITI.NE”] means “that month” (because) “NE” means “that”
+#note: An identical explanation of @akk{{iti}NE} occurs in @i{CCP} 3.2.1.A.a l. 50, with the additional comment that “it is said in the @i{ṣâtu}.” Compare also @akk{[{iti}]GAN?#} = @akk{ITI šu-a-tu₄ KAM šu-a-tu₄} in @i{CCP} 3.1.47 l. 43′. Otherwise, @akk{NE} usually means @i{annû}.
+15'. !bs [* U₄.20].KAM₂# AN.GE₆ GAR ŠEG₃-ME ina AN{+e}
+#lem: X; attallû[eclipse]N; iššakkan[take place]V; zunnū[rain]N; ina[from]PRP; šamê[heaven]N
+
+#tr.en: [“If] an eclipse occurs [on the twentieth day], rain from the sky 
+16'. ($___$) !bs [ILLU-ME ina IDIM KU₅]-MEŠ# KUR# ana KUR i-ha-aq-ma SILIM{+mu} GAR
+#lem: mīlū[flood]N; ina[in]PRP; nagbi[source]N; ipparrasū[cut (off)]V; mātu[land]N; ana[according to]PRP; mātu[land]N; +hâqu[go]V$ihâq-ma; šalāmu[peace]N; šakin[displayed]AJ
+
+#tr.en: [“(and) floods from the source will cease, land will @i{go against} (another) land and peace will occur” (= @i{EAE} XXI §VI, 4).
+17'. ($___$) !bs [ha-a-qu !cm :] a-la-ku#
+#lem: +hâqu[go//going]V'N$; alāku[going]'N
+#tr.en: [@i{ḫâqu} means] “to go.”
+
+#note: @i{ḫâqu} = @i{alāqu} is attested in BM 35509 i 14′ (@i{LBAT} 1577 = @i{CCP} 3.1.u19).
+
+$ single ruling
+18'. !bs [* U₄.x.KAM] AN#.GE₆ GAR# [...]
+#lem: u; attallû[eclipse]N; iššakkan[take place]V; u
+
+#tr.en: [“If] an eclipse occurs [on the x day …”]
