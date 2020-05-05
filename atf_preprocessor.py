@@ -128,19 +128,7 @@ def process_line(atf,debug):
             print("----------------------------------------------------------------------")
             print("converting line: '"+atf+"'")
 
-        #if atf.startswith("#tr"):
-         #   print("skipping translation")
-        #    return
 
-        #if atf.startswith("#lem"):
-        #    print("skipping lemma line")
-        #    return
-
-
-        #atf = atf.replace("[*]", "[ *]") # Strip bullet line start
-        #atf = atf.replace("<*>", "< *>") # Strip ?
-        #atf = atf.replace("<:>", "< :>") # Strip ?
-        #atf = atf.replace("[: *]", "[ : *]") # Strip ?
 
         atf = re.sub("([\[<])([\*:])(.*)", r"\1 \2\3", atf) # Convert [* => [  <* => < *
         atf = re.sub("(\*)([\]>])(.*)", r"\1 \2\3", atf) # Convert *] => * ]  ?
@@ -158,10 +146,6 @@ def process_line(atf,debug):
 
             Strip_Signs().visit(tree)
 
-
-
-            #line_number_serializer = Get_Line_Number()
-            #line_number_serializer.visit_topdown(tree)
 
             line_serializer = Line_Serializer()
             line_serializer.visit_topdown(tree)
