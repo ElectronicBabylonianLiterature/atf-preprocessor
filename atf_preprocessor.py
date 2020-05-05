@@ -14,7 +14,7 @@ class Convert_Line_Dividers(Visitor):
 
   def oracc_atf_text_line__divider(self, tree):
     assert tree.data == "oracc_atf_text_line__divider"
-    if tree.children[0] == "*" or tree.children[0] == "•":
+    if tree.children[0] == "*":
         tree.children[0] = "DIŠ"
 
 class Convert_Legacy_Grammar_Signs(Visitor):
