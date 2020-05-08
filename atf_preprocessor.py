@@ -9,7 +9,6 @@ from lark import Lark
 from lark import Tree, Transformer, Visitor
 
 
-
 class Convert_Line_Dividers(Visitor):
 
   def oracc_atf_text_line__divider(self, tree):
@@ -116,105 +115,88 @@ class Get_Line_Number(Visitor):
 
     return result
 
-def process_line(atf,debug):
+class ATF_Preprocessor:
 
-    try:
-        tree = LINE_PARSER.parse(atf)
-        if debug:
-            print("successfully parsed: " +atf)
-        return atf
-    except:
-        if debug:
-            print("----------------------------------------------------------------------")
-            print("converting line: '"+atf+"'")
+    def __init__(self):
+        pass
+        self.LINE_PARSER = Lark.open("lark-ebl/ebl_atf.lark", maybe_placeholders=True, rel_to=__file__)
+        self.LINE_PARSER2 = Lark.open("lark-oracc/oracc_atf.lark", maybe_placeholders=True, rel_to=__file__)
 
-
-
-        atf = re.sub("([\[<])([\*:])(.*)", r"\1 \2\3", atf) # Convert [* => [  <* => < *
-        atf = re.sub("(\*)([\]>])(.*)", r"\1 \2\3", atf) # Convert *] => * ]  ?
-
-        atf = atf.replace("\t", " ") # convert tabs to spaces
-        atf = ' '.join(atf.split()) # remove multiple spaces
+    def process_line(self,atf,debug):
 
         try:
-
-            tree = LINE_PARSER2.parse(atf)
-            #print(tree.pretty())
-
-            Convert_Line_Dividers().visit(tree)
-            Convert_Legacy_Grammar_Signs().visit(tree)
-
-            Strip_Signs().visit(tree)
-
-
-            line_serializer = Line_Serializer()
-            line_serializer.visit_topdown(tree)
-            converted_line = line_serializer.line.strip(" ")
-
-
+            tree = self.LINE_PARSER.parse(atf)
             if debug:
-                print("converted line:  '"+converted_line+"'")
-
-            try :
-                tree3 = LINE_PARSER.parse(converted_line)
-                if debug:
-                    print("successfully parsed converted line")
-                return atf
-
-            except Exception as e:
-                print("\tcould not parse converted line")
-                traceback.print_exc(file=sys.stdout)
-
+                print("successfully parsed: " +atf)
+            return atf
+        except:
             if debug:
                 print("----------------------------------------------------------------------")
-
-        except:
-            print("could not convert line")
-            traceback.print_exc(file=sys.stdout)
+                print("converting line: '"+atf+"'")
 
 
 
-def convert_lines(file,debug):
+            atf = re.sub("([\[<])([\*:])(.*)", r"\1 \2\3", atf) # Convert [* => [  <* => < *
+            atf = re.sub("(\*)([\]>])(.*)", r"\1 \2\3", atf) # Convert *] => * ]  ?
 
-    print("converting: \""+file+"\"")
+            atf = atf.replace("\t", " ") # convert tabs to spaces
+            atf = ' '.join(atf.split()) # remove multiple spaces
 
-    with codecs.open(file, 'r', encoding='utf8') as f:
-        atf_ = f.read()
+            try:
 
-    lines = atf_.split("\n")
+                tree = self.LINE_PARSER2.parse(atf)
+                #print(tree.pretty())
 
+                Convert_Line_Dividers().visit(tree)
+                Convert_Legacy_Grammar_Signs().visit(tree)
 
-    processed_lines = []
-    for line in lines:
-        # print(line)
-        p_line = process_line(line,debug)
-        if p_line != None:
-            processed_lines.append(p_line)
-
-    return processed_lines
+                Strip_Signs().visit(tree)
 
 
-
-class TestConverter(unittest.TestCase):
-
-    def test_cccp(self):
-        lines = convert_lines("test-files/cccp_3_1_16_test.atf",False)
-        self.assertTrue(len(lines)==259)
-
-        lines = convert_lines("test-files/cccp_3_1_21_test.atf",False)
-        self.assertTrue(len(lines) == 90) # one invalid line removed
+                line_serializer = Line_Serializer()
+                line_serializer.visit_topdown(tree)
+                converted_line = line_serializer.line.strip(" ")
 
 
-if __name__ == '__main__':
+                if debug:
+                    print("converted line:  '"+converted_line+"'")
+
+                try :
+                    tree3 = self.LINE_PARSER.parse(converted_line)
+                    if debug:
+                        print("successfully parsed converted line")
+                    return converted_line
+
+                except Exception as e:
+                    print("\tcould not parse converted line")
+                    traceback.print_exc(file=sys.stdout)
+
+                if debug:
+                    print("----------------------------------------------------------------------")
+
+            except:
+                print("could not convert line")
+                traceback.print_exc(file=sys.stdout)
 
 
-    LINE_PARSER = Lark.open("lark-ebl/ebl_atf.lark", maybe_placeholders=True, rel_to=__file__)
-    LINE_PARSER2 = Lark.open("lark-oracc/oracc_atf.lark", maybe_placeholders=True, rel_to=__file__)
 
-    #convert_lines("test-files/test_atf.atf",True)
-    convert_lines("test-files/sptu_1_030.atf",True)
+    def convert_lines(self,file,debug):
+
+        print("converting: \""+file+"\"")
+
+        with codecs.open(file, 'r', encoding='utf8') as f:
+            atf_ = f.read()
+
+        lines = atf_.split("\n")
 
 
-    unittest.main()
+        processed_lines = []
+        for line in lines:
+            # print(line)
+            p_line = self.process_line(line,debug)
+            if p_line != None:
+                processed_lines.append(p_line)
+
+        return processed_lines
 
 
