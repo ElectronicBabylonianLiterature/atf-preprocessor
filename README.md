@@ -10,7 +10,7 @@ This script converts .atf files which are encoded according to the oracc and c-A
 $ python convert_atf.py [-h] -i INPUT [-o OUTPUT] [-t] [-v]
 ```
 <!-- usagestop -->
-## Options
+## Command line options
 * `-h` shows help message and exits the script
 * `-i` path to the input directory (`required`)
 * `-o` path to the output directory
