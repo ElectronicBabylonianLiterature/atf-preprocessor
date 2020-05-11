@@ -165,6 +165,7 @@ class ATF_Preprocessor:
                     tree3 = self.LINE_PARSER.parse(converted_line)
                     if debug:
                         print("successfully parsed converted line")
+                    print(converted_line)
                     return converted_line
 
                 except Exception as e:
@@ -179,8 +180,8 @@ class ATF_Preprocessor:
 
             except:
                 error = "could not convert this line"
-                if debug:
-                    print(error)
+              
+                print(error+": "+atf)
                 return(error+": "+atf)
 
 
