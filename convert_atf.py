@@ -1,0 +1,88 @@
+
+import sys,os
+import codecs
+import re
+import traceback
+import glob
+import unittest
+import argparse
+
+from lark import Lark
+from lark import Tree, Transformer, Visitor
+from atf_preprocessor import ATF_Preprocessor
+
+
+class TestConverter(unittest.TestCase):
+
+    def test_lines(self):
+        atf_preprocessor = ATF_Preprocessor()
+
+        converted_line=atf_preprocessor.process_line("1. [*] AN#.GE₆ GAR-ma U₄ ŠU₂{+up} * AN.GE₆ GAR-ma {d}IŠKUR KA-šu₂ ŠUB{+di} * AN.GE₆",False)
+        self.assertTrue(converted_line == "1. [ DIŠ ] AN#.GE₆ GAR-ma U₄ ŠU₂{+up} DIŠ AN.GE₆ GAR-ma {d}IŠKUR KA-šu₂ ŠUB{+di} DIŠ AN.GE₆")
+
+        converted_line=atf_preprocessor.process_line("8. KAR <:> e-ṭe-ri :* KAR : e-ke-mu : LUGAL ina di-bi-ri : LUGAL ina ud-da-a-ta",False)
+        self.assertTrue(converted_line == "8. KAR < :> e-ṭe-ri :* KAR : e-ke-mu : LUGAL ina di-bi-ri : LUGAL ina ud-da-a-ta")
+
+
+    def test_following_sign_not_a_logogram(self):
+        atf_preprocessor = ATF_Preprocessor()
+
+        converted_line = atf_preprocessor.process_line("5'.	[...] x [...] x-šu₂? : kal : nap-ha-ri : $WA-wa-ru : ia-ar₂-ru", False)
+        self.assertTrue(converted_line == "5'. [...] x [...] x-šu₂? : kal : nap-ha-ri : WA-wa-ru : ia-ar₂-ru")
+
+    def test_cccp(self):
+        atf_preprocessor = ATF_Preprocessor()
+
+        lines = atf_preprocessor.convert_lines("test-files/cccp_3_1_16_test.atf",False)
+        self.assertTrue(len(lines)==259)
+
+        lines = atf_preprocessor.convert_lines("test-files/cccp_3_1_21_test.atf",False)
+        self.assertTrue(len(lines) == 90) # one invalid line removed
+
+
+if __name__ == '__main__':
+
+    LINE_PARSER = Lark.open("lark-ebl/ebl_atf.lark", maybe_placeholders=True, rel_to=__file__)
+    LINE_PARSER2 = Lark.open("lark-oracc/oracc_atf.lark", maybe_placeholders=True, rel_to=__file__)
+    atf_preprocessor = ATF_Preprocessor()
+
+    # run test cases if -t option is set
+    if len(sys.argv) > 1 and sys.argv[1] in ["-t", "--test"]:
+        del (sys.argv[1])
+        sys.exit(unittest.main())
+
+    atf_preprocessor.process_line("@translation parallel en project",True)
+
+    parser = argparse.ArgumentParser(description='Converts ATF-files to eBL-ATF standard.')
+    parser.add_argument('-i', "--input", required=True,
+                        help='path of the input directory')
+    parser.add_argument('-o', "--output", required=False,
+                        help='path of the output directory')
+    parser.add_argument('-t', "--test", required=False, default=False, action='store_true',
+                        help='runs all unit-tests')
+    parser.add_argument('-v', "--verbose", required=False, default=False, action='store_true',
+                        help='display status messages')
+
+    args = parser.parse_args()
+
+    debug = args.verbose
+
+    for filepath in glob.glob(os.path.join(args.input, '*.atf')):
+        with open(filepath, 'r') as f:
+
+            converted_lines = atf_preprocessor.convert_lines(filepath, debug)
+
+            if args.output:
+                split = filepath.split("\\")
+                filename = split[-1]
+
+                f = open(args.output + "/" + filename, "wb")
+                for c_line in converted_lines:
+                    c_line=c_line+"\n"
+                    f.write(c_line.encode('utf-8'))
+                f.close()
+
+
+
+
+

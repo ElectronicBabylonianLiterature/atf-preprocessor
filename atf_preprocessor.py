@@ -9,6 +9,11 @@ from lark import Lark
 from lark import Tree, Transformer, Visitor
 
 
+class ConversionError(Exception):
+   pass
+
+class ParseError(Exception):
+   pass
 class Convert_Line_Dividers(Visitor):
 
   def oracc_atf_text_line__divider(self, tree):
@@ -131,10 +136,7 @@ class ATF_Preprocessor:
             return atf
         except:
             if debug:
-                print("----------------------------------------------------------------------")
                 print("converting line: '"+atf+"'")
-
-
 
             atf = re.sub("([\[<])([\*:])(.*)", r"\1 \2\3", atf) # Convert [* => [  <* => < *
             atf = re.sub("(\*)([\]>])(.*)", r"\1 \2\3", atf) # Convert *] => * ]  ?
@@ -143,25 +145,23 @@ class ATF_Preprocessor:
             atf = ' '.join(atf.split()) # remove multiple spaces
 
             try:
-
                 tree = self.LINE_PARSER2.parse(atf)
-                #print(tree.pretty())
+
+                # print(tree.pretty())
 
                 Convert_Line_Dividers().visit(tree)
                 Convert_Legacy_Grammar_Signs().visit(tree)
 
                 Strip_Signs().visit(tree)
 
-
                 line_serializer = Line_Serializer()
                 line_serializer.visit_topdown(tree)
                 converted_line = line_serializer.line.strip(" ")
 
-
                 if debug:
-                    print("converted line:  '"+converted_line+"'")
+                    print("converted line:  '" + converted_line + "'")
 
-                try :
+                try:
                     tree3 = self.LINE_PARSER.parse(converted_line)
                     if debug:
                         print("successfully parsed converted line")
@@ -169,14 +169,20 @@ class ATF_Preprocessor:
 
                 except Exception as e:
                     print("\tcould not parse converted line")
-                    traceback.print_exc(file=sys.stdout)
+                    if debug:
+                        traceback.print_exc(file=sys.stdout)
+
+
 
                 if debug:
                     print("----------------------------------------------------------------------")
 
             except:
-                print("could not convert line")
-                traceback.print_exc(file=sys.stdout)
+                error = "could not convert this line"
+                if debug:
+                    print(error)
+                return(error+": "+atf)
+
 
 
 
