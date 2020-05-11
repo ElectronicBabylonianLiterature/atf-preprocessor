@@ -11,7 +11,7 @@ word_separator : WORD_SEPARATOR
 ?value: strict
       | "(" " "* strict " "* ")"
       | loose
-?strict: state | ruling | image | seal
+?strict: state | RULING | image | seal
 loose: "(" free_text ")"
 
 state: QUALIFICATION [WORD_SEPARATOR extent] [WORD_SEPARATOR scope] [WORD_SEPARATOR STATE] [WORD_SEPARATOR DOLLAR_STATUS]
@@ -35,7 +35,7 @@ STATE: "blank" | "broken" | "effaced" | "illegible" | "missing" | "traces"
 
 DOLLAR_STATUS: "!?" | "*" | "?" | "!"
 
-ruling : RULING_NUMBER " ruling" [" "? DOLLAR_STATUS]
+RULING : RULING_NUMBER " ruling" [" "? DOLLAR_STATUS]
 RULING_NUMBER : "single" | "double" | "triple"
 
 
