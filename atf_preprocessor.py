@@ -14,6 +14,8 @@ class ConversionError(Exception):
 
 class ParseError(Exception):
    pass
+
+
 class Convert_Line_Dividers(Visitor):
 
   def oracc_atf_text_line__divider(self, tree):
@@ -130,11 +132,17 @@ class ATF_Preprocessor:
     def process_line(self,atf,debug):
 
         try:
+
+            if atf.startswith("#lem"):
+                raise Exception
+
             tree = self.LINE_PARSER.parse(atf)
             if debug:
                 print("successfully parsed: " +atf)
+                print("----------------------------------------------------------------------")
             return atf
-        except:
+
+        except Exception :
             if debug:
                 print("converting line: '"+atf+"'")
 
@@ -147,7 +155,8 @@ class ATF_Preprocessor:
             try:
                 tree = self.LINE_PARSER2.parse(atf)
 
-                # print(tree.pretty())
+                #print(tree.pretty())
+
 
                 Convert_Line_Dividers().visit(tree)
                 Convert_Legacy_Grammar_Signs().visit(tree)
@@ -159,13 +168,16 @@ class ATF_Preprocessor:
                 converted_line = line_serializer.line.strip(" ")
 
                 if debug:
-                    print("converted line:  '" + converted_line + "'")
+                    print("converted line as "+tree.data+" --> '" + converted_line + "'")
 
                 try:
                     tree3 = self.LINE_PARSER.parse(converted_line)
                     if debug:
                         print("successfully parsed converted line")
                     print(converted_line)
+                    if debug:
+                        print("----------------------------------------------------------------------")
+
                     return converted_line
 
                 except Exception as e:
@@ -175,12 +187,9 @@ class ATF_Preprocessor:
 
 
 
-                if debug:
-                    print("----------------------------------------------------------------------")
-
             except:
                 error = "could not convert this line"
-              
+
                 print(error+": "+atf)
                 return(error+": "+atf)
 

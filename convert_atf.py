@@ -56,9 +56,8 @@ if __name__ == '__main__':
 
     atf_preprocessor = ATF_Preprocessor()
 
-    atf_preprocessor.process_line("#lem: attallû[eclipse]N; iššakinma[take place]V; enūma[when]SBJ; īrup[cloud over]V; attallû[eclipse]N; iššakinma[take place]V; Adad[1]DN; +rigmu[voice]N$rigimšu;",True)
 
-    #atf_preprocessor.process_line("#lem: attallû[eclipse]N; iššakinma[take place]V; enūma[when]SBJ; īrup[cloud over]V; attallû[eclipse]N; iššakinma[take place]V; Adad[1]DN; +rigmu[voice]N$rigimšu; iddi[utter]V; attallû[eclipse]N",True)
+    atf_preprocessor.process_line("#lem: +kamāru[pile up]V$ikkammarū; +dâku[kill]V$iddâkū; aššum[because of]'PRP; +kamāru[pile up]",True)
     #atf_preprocessor.process_line("@translation parallel en project",True)
 
 
