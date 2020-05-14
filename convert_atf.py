@@ -42,16 +42,16 @@ class TestConverter(unittest.TestCase):
 
 if __name__ == '__main__':
 
-    LINE_PARSER = Lark.open("lark-ebl/ebl_atf.lark", maybe_placeholders=True, rel_to=__file__)
-    LINE_PARSER2 = Lark.open("lark-oracc/oracc_atf.lark", maybe_placeholders=True, rel_to=__file__)
+
     atf_preprocessor = ATF_Preprocessor()
+    atf_preprocessor.process_line("#lem: attallû[eclipse]N; attallû[eclipse]N;",True)
+    atf_preprocessor.process_line("1. [*] AN#.GE₆ GAR-ma U₄ ŠU₂{+up} * AN.GE₆ GAR-ma {d}IŠKUR KA-šu₂ ŠUB{+di} * AN.GE₆",True)
 
-    # run test cases if -t option is set
-    if len(sys.argv) > 1 and sys.argv[1] in ["-t", "--test"]:
-        del (sys.argv[1])
-        sys.exit(unittest.main())
 
-    atf_preprocessor.process_line("@translation parallel en project",True)
+    #atf_preprocessor.process_line("#lem: attallû[eclipse]N; iššakinma[take place]V; enūma[when]SBJ; īrup[cloud over]V; attallû[eclipse]N; iššakinma[take place]V; Adad[1]DN; +rigmu[voice]N$rigimšu; iddi[utter]V; attallû[eclipse]N",True)
+    #atf_preprocessor.process_line("@translation parallel en project",True)
+
+
 
     parser = argparse.ArgumentParser(description='Converts ATF-files to eBL-ATF standard.')
     parser.add_argument('-i', "--input", required=True,
@@ -66,6 +66,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     debug = args.verbose
+
+
 
     for filepath in glob.glob(os.path.join(args.input, '*.atf')):
         with open(filepath, 'r') as f:
