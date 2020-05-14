@@ -16,4 +16,9 @@ $ python convert_atf.py [-h] -i INPUT [-o OUTPUT] [-t] [-v]
   * `-o` path to the output directory
   * `-v` display status messages
 - ## Testing
-
+ * run pytest from command line:
+ <!-- testing -->
+```sh-session
+$ pytest convert_atf.py
+```
+<!-- testing -->
