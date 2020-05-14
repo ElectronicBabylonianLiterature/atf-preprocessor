@@ -30,6 +30,17 @@ class TestConverter(unittest.TestCase):
         converted_line = atf_preprocessor.process_line("5'.	[...] x [...] x-šu₂? : kal : nap-ha-ri : $WA-wa-ru : ia-ar₂-ru", False)
         self.assertTrue(converted_line == "5'. [...] x [...] x-šu₂? : kal : nap-ha-ri : WA-wa-ru : ia-ar₂-ru")
 
+    def test_legacy_grammar(self):
+        atf_preprocessor = ATF_Preprocessor()
+
+        converted_line = atf_preprocessor.process_line("57. {mulₓ(AB₂)}GU.LA KI* ŠEG₃ KI*# {kur}NIM.MA{ki} iš-kar* É.GAL : ANŠE.KUR.RA-MEŠ", False)
+        self.assertTrue(converted_line == "57. {mulₓ(AB₂)}GU.LA KI* ŠEG₃ KI*# {kur}NIM.MA{ki} iš-kar* E₂.GAL : ANŠE.KUR.RA-MEŠ")
+
+        converted_line = atf_preprocessor.process_line("57. {mulₓ(AB₂)}GU.LA KI* ŠEG₃ KI*# {kur}NIM.MA{ki} iš-kar* ÁM.GAL : ANŠE.KUR.RA-MEŠ", True)
+        self.assertTrue(converted_line == "57. {mulₓ(AB₂)}GU.LA KI* ŠEG₃ KI*# {kur}NIM.MA{ki} iš-kar* AM₃.GAL : ANŠE.KUR.RA-MEŠ")
+
+
+
     def test_cccp(self):
         atf_preprocessor = ATF_Preprocessor()
 
@@ -44,9 +55,8 @@ if __name__ == '__main__':
 
 
     atf_preprocessor = ATF_Preprocessor()
-    atf_preprocessor.process_line("#lem: attallû[eclipse]N; attallû[eclipse]N;",True)
-    atf_preprocessor.process_line("1. [*] AN#.GE₆ GAR-ma U₄ ŠU₂{+up} * AN.GE₆ GAR-ma {d}IŠKUR KA-šu₂ ŠUB{+di} * AN.GE₆",True)
 
+    atf_preprocessor.process_line("#lem: attallû[eclipse]N; iššakinma[take place]V; enūma[when]SBJ; īrup[cloud over]V; attallû[eclipse]N; iššakinma[take place]V; Adad[1]DN; +rigmu[voice]N$rigimšu;",True)
 
     #atf_preprocessor.process_line("#lem: attallû[eclipse]N; iššakinma[take place]V; enūma[when]SBJ; īrup[cloud over]V; attallû[eclipse]N; iššakinma[take place]V; Adad[1]DN; +rigmu[voice]N$rigimšu; iddi[utter]V; attallû[eclipse]N",True)
     #atf_preprocessor.process_line("@translation parallel en project",True)
