@@ -189,8 +189,9 @@ class ATF_Preprocessor:
 
             except:
                 error = "could not convert this line"
-
                 print(error+": "+atf)
+                traceback.print_exc(file=sys.stdout)
+
                 return(error+": "+atf)
 
 

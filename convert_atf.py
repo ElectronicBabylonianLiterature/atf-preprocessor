@@ -56,8 +56,7 @@ if __name__ == '__main__':
 
     atf_preprocessor = ATF_Preprocessor()
 
-
-    atf_preprocessor.process_line("#lem: +kamāru[pile up]V$ikkammarū; +dâku[kill]V$iddâkū; aššum[because of]'PRP; +kamāru[pile up]",True)
+    atf_preprocessor.process_line("#lem: u[and]CNJ; +elēhu[strew]V$īlih; ina[in]PRP; qablišu[middle]N; ina[in]PRP; mišil[half]NU",True)
     #atf_preprocessor.process_line("@translation parallel en project",True)
 
 

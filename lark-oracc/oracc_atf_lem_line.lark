@@ -1,13 +1,14 @@
 %import .oracc_atf_common (VALUE_CHARACTER)
 %import .oracc_atf_common (LOGOGRAM_CHARACTER)
 
-lem_line: "#lem: " (lemma LEM_SEPARATOR)+ lemma 
+lem_line: "#lem: " lemma (LEM_SEPARATOR lemma)*
 LEM_SEPARATOR : "; "
-lemma : "X" | "+"? value_part guide_word pos_tag norm0?
+lemma : "X" | "+"? value_part guide_word? pos_tag? e_pos_tag? norm0?
 
 value_part: (VALUE_CHARACTER|LOGOGRAM_CHARACTER)+
-guide_word: "["/[a-z\s\d\)\(\/]/+"]"
+guide_word: "["/[\.a-z\s\d\)\(\/-]/+"]"
 pos_tag: POS_TAG
-norm0: NORM(VALUE_CHARACTER|LOGOGRAM_CHARACTER)+
+e_pos_tag: "'" POS_TAG
+norm0: NORM(VALUE_CHARACTER|LOGOGRAM_CHARACTER|/[\.a-z\s\d\)\(\/-]/)+ | NORM
 NORM : "$"
-POS_TAG : "AJ"| "AV" | "N" | "NU" | "V" | "DP" | "IP" | "PP" | "RP" | "XP" | "REL" | "DET" | "CNJ" | "J" | "MOD" | "PRP" | "QP" | "SBJ" | "DN" | "WN" | "PN"
+POS_TAG : "REL" | "DET" | "CNJ" | "MOD" | "PRP" | "SBJ" | "AJ"| "AV" | "NU" | "DP" | "IP" | "PP" | "RP" | "XP" | "QP" |"DN" | "WN" | "PN" | "N" | "V" | "J" 
