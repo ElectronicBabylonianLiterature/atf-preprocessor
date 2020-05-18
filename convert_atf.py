@@ -14,51 +14,100 @@ from atf_preprocessor import ATF_Preprocessor
 
 class TestConverter(unittest.TestCase):
 
+    # Generic Line Test case for problematic text lines
     def test_lines(self):
         atf_preprocessor = ATF_Preprocessor()
 
-        converted_line=atf_preprocessor.process_line("1. [*] AN#.GE₆ GAR-ma U₄ ŠU₂{+up} * AN.GE₆ GAR-ma {d}IŠKUR KA-šu₂ ŠUB{+di} * AN.GE₆",False)
+        converted_line,type=atf_preprocessor.process_line("1. [*] AN#.GE₆ GAR-ma U₄ ŠU₂{+up} * AN.GE₆ GAR-ma {d}IŠKUR KA-šu₂ ŠUB{+di} * AN.GE₆",False)
         self.assertTrue(converted_line == "1. [ DIŠ ] AN#.GE₆ GAR-ma U₄ ŠU₂{+up} DIŠ AN.GE₆ GAR-ma {d}IŠKUR KA-šu₂ ŠUB{+di} DIŠ AN.GE₆")
 
-        converted_line=atf_preprocessor.process_line("8. KAR <:> e-ṭe-ri :* KAR : e-ke-mu : LUGAL ina di-bi-ri : LUGAL ina ud-da-a-ta",False)
+        converted_line,type=atf_preprocessor.process_line("8. KAR <:> e-ṭe-ri :* KAR : e-ke-mu : LUGAL ina di-bi-ri : LUGAL ina ud-da-a-ta",False)
         self.assertTrue(converted_line == "8. KAR < :> e-ṭe-ri :* KAR : e-ke-mu : LUGAL ina di-bi-ri : LUGAL ina ud-da-a-ta")
 
-
+    # Test case for removal of "$" if following sign not a logogram
     def test_following_sign_not_a_logogram(self):
         atf_preprocessor = ATF_Preprocessor()
 
-        converted_line = atf_preprocessor.process_line("5'.	[...] x [...] x-šu₂? : kal : nap-ha-ri : $WA-wa-ru : ia-ar₂-ru", False)
+        converted_line,type = atf_preprocessor.process_line("5'.	[...] x [...] x-šu₂? : kal : nap-ha-ri : $WA-wa-ru : ia-ar₂-ru", False)
         self.assertTrue(converted_line == "5'. [...] x [...] x-šu₂? : kal : nap-ha-ri : WA-wa-ru : ia-ar₂-ru")
 
+    # Test case for conversion of legacy grammar signs
     def test_legacy_grammar(self):
         atf_preprocessor = ATF_Preprocessor()
 
-        converted_line = atf_preprocessor.process_line("57. {mulₓ(AB₂)}GU.LA KI* ŠEG₃ KI*# {kur}NIM.MA{ki} iš-kar* É.GAL : ANŠE.KUR.RA-MEŠ", False)
+        converted_line,type = atf_preprocessor.process_line("57. {mulₓ(AB₂)}GU.LA KI* ŠEG₃ KI*# {kur}NIM.MA{ki} iš-kar* É.GAL : ANŠE.KUR.RA-MEŠ", False)
         self.assertTrue(converted_line == "57. {mulₓ(AB₂)}GU.LA KI* ŠEG₃ KI*# {kur}NIM.MA{ki} iš-kar* E₂.GAL : ANŠE.KUR.RA-MEŠ")
 
-        converted_line = atf_preprocessor.process_line("57. {mulₓ(AB₂)}GU.LA KI* ŠEG₃ KI*# {kur}NIM.MA{ki} iš-kar* ÁM.GAL : ANŠE.KUR.RA-MEŠ", True)
+        converted_line,type = atf_preprocessor.process_line("57. {mulₓ(AB₂)}GU.LA KI* ŠEG₃ KI*# {kur}NIM.MA{ki} iš-kar* ÁM.GAL : ANŠE.KUR.RA-MEŠ", True)
         self.assertTrue(converted_line == "57. {mulₓ(AB₂)}GU.LA KI* ŠEG₃ KI*# {kur}NIM.MA{ki} iš-kar* AM₃.GAL : ANŠE.KUR.RA-MEŠ")
 
-
-
-    def test_cccp(self):
+    # Test case to test if a lem line is parsed as type "lem_line"
+    def test_lemmantization(self):
         atf_preprocessor = ATF_Preprocessor()
 
-        lines = atf_preprocessor.convert_lines("test-files/cccp_3_1_16_test.atf",False)
-        self.assertTrue(len(lines)==259)
+        converted_line,type = atf_preprocessor.process_line(
+            "#lem: Sin[1]DN; ina[at]PRP; Nisannu[1]MN; ina[at]PRP; tāmartišu[appearance]N; adir[dark]AJ; ina[in]PRP; aṣîšu[going out]'N; adri[dark]AJ; uṣṣi[go out]V; šarrū[king]N; +šanānu[equal]V$iššannanū-ma",
+            True)
+        self.assertTrue(type == "lem_line")
 
-        lines = atf_preprocessor.convert_lines("test-files/cccp_3_1_21_test.atf",False)
-        self.assertTrue(len(lines) == 90) # one invalid line removed
+        converted_line,type = atf_preprocessor.process_line("#lem: iššannanū-ma[equal]V; +šanānu[equal]V$iššannanū-ma; umma[saying]PRP; +šarru[king]N$; mala[as many]PRP; +šarru[king]N$šarri; +maṣû[correspond]V$imaṣṣû",True)
+        self.assertTrue(type == "lem_line")
 
+        converted_line,type =  atf_preprocessor.process_line("#lem: +adrūssu[darkly]AV$; īrub[enter]V; +arītu[pregnant (woman)]N$arâtu; ša[of]DET; libbašina[belly]N; ittadûni[contain]V; ina[in]PRP; +Zuqiqīpu[Scorpius]CN$",True)
+        self.assertTrue(type == "lem_line")
+
+        converted_line,type = atf_preprocessor.process_line("#lem: šatti[year]N; n; +Artaxerxes[]RN$artakšatsu; šar[king]N; pālih[reverent one]N; Nabu[1]DN; lā[not]MOD; itabbal[disappear]V; maʾdiš[greatly]N; lišāqir[value]V",True)
+        self.assertTrue(type == "lem_line")
+
+        converted_line,type = atf_preprocessor.process_line("#lem: +arāmu[cover]V$īrim-ma; ana[according to]PRP; birṣu[(a luminous phenomenon)]N; itârma[turn]V; adi[until]PRP; šāt[who(m)]DET&urri[daytime]N; illakma[flow]V",True)
+        self.assertTrue(type == "lem_line")
+
+        converted_line,type = atf_preprocessor.process_line("#lem: u; eššu[new]AJ; u +.",True)
+        self.assertTrue(type == "lem_line")
+
+        converted_line, type = atf_preprocessor.process_line(
+            "#lem: u; ubû[unit]N; n; n; qû[unit]N; ubû[unit]N; +Ištar[]DN$; Ištar[1]DN +.; +saparru[cart]N$; u", True)
+        self.assertTrue(type == "lem_line")
+
+        converted_line,type = atf_preprocessor.process_line(
+            "#lem: !+māru[son]N$; !+māru[son]N$māri; târu[turning back]'N; +našû[lift//carrying]V'N$ +.; u; +narkabtu[chariot]N$narkabta; īmur[see]V; marṣu[patient]N; šū[that]IP; qāt[hand]N; Ištar[1]DN; u",
+            True)
+        self.assertTrue(type == "lem_line")
+
+        converted_line,type = atf_preprocessor.process_line("#lem: +burmāmu[(an animal)//porcupine?]N$; +burmāmu[(an animal)//porcupine?]N$buriyāmu; ša[whose]REL; +zumru[body]N$zumuršu; kīma[like]PRP; +ṭīmu[yarn]N$ṭime; +eṣēru[draw//mark]V$uṣṣuru +.",True)
+        self.assertTrue(type == "lem_line")
+
+        converted_line,type = atf_preprocessor.process_line("#lem: u; +appāru[reed-bed]N$",True)
+        self.assertTrue(type == "lem_line")
+
+
+
+    # Batch test case to test if lemma lines are parsed as type "lem_line"
+    def test_lemmatization_batch(self):
+        atf_preprocessor = ATF_Preprocessor()
+
+        lines = atf_preprocessor.convert_lines("test-files/test_lemma.atf",False)
+
+        for line,type in lines:
+            self.assertTrue(type == "lem_line")
+
+    # Batch test for cccp files
+    def test_cccp(self):
+            atf_preprocessor = ATF_Preprocessor()
+
+            lines = atf_preprocessor.convert_lines("test-files/cccp_3_1_16_test.atf",False)
+            self.assertTrue(len(lines)==259)
+
+            lines = atf_preprocessor.convert_lines("test-files/cccp_3_1_21_test.atf",False)
+            self.assertTrue(len(lines) == 90) # one invalid line removed
 
 if __name__ == '__main__':
 
 
     atf_preprocessor = ATF_Preprocessor()
 
-    atf_preprocessor.process_line("#lem: u[and]CNJ; +elēhu[strew]V$īlih; ina[in]PRP; qablišu[middle]N; ina[in]PRP; mišil[half]NU",True)
+    atf_preprocessor.process_line("#lem: u; +appāru[reed-bed]N$",True)
     #atf_preprocessor.process_line("@translation parallel en project",True)
-
 
 
     parser = argparse.ArgumentParser(description='Converts ATF-files to eBL-ATF standard.')
@@ -74,8 +123,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     debug = args.verbose
-
-
 
     for filepath in glob.glob(os.path.join(args.input, '*.atf')):
         with open(filepath, 'r') as f:

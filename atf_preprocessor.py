@@ -3,7 +3,6 @@ import sys
 import codecs
 import re
 import traceback
-import unittest
 
 from lark import Lark
 from lark import Tree, Transformer, Visitor
@@ -140,7 +139,7 @@ class ATF_Preprocessor:
             if debug:
                 print("successfully parsed: " +atf)
                 print("----------------------------------------------------------------------")
-            return atf
+            return atf,None
 
         except Exception :
             if debug:
@@ -173,12 +172,12 @@ class ATF_Preprocessor:
                 try:
                     tree3 = self.LINE_PARSER.parse(converted_line)
                     if debug:
-                        print("successfully parsed converted line")
+                        print('successfully parsed converted line')
                     print(converted_line)
                     if debug:
                         print("----------------------------------------------------------------------")
 
-                    return converted_line
+                    return converted_line,tree.data
 
                 except Exception as e:
                     print("\tcould not parse converted line")
@@ -188,11 +187,12 @@ class ATF_Preprocessor:
 
 
             except:
-                error = "could not convert this line"
-                print(error+": "+atf)
+                error = "could not convert line"
+
+                print(error+": "+atf,'red')
                 traceback.print_exc(file=sys.stdout)
 
-                return(error+": "+atf)
+                return(error+": "+atf),None
 
 
 
@@ -210,9 +210,9 @@ class ATF_Preprocessor:
         processed_lines = []
         for line in lines:
             # print(line)
-            p_line = self.process_line(line,debug)
+            p_line,type = self.process_line(line,debug)
             if p_line != None:
-                processed_lines.append(p_line)
+                processed_lines.append((p_line,type))
 
         return processed_lines
 
