@@ -121,6 +121,26 @@ class Get_Line_Number(Visitor):
 
     return result
 
+
+class Get_Lemma_Values_and_Guidwords(Visitor):
+    result = []
+
+    def oracc_atf_lem_line__lemma(self, tree):
+        lemma_line = []
+        assert tree.data == "oracc_atf_lem_line__lemma"
+        lemma_value = ""
+        guide_word = ""
+        i = 0
+        cl = len(tree.children)
+        for child in tree.children:
+            if child.data=="oracc_atf_lem_line__value_part":
+                lemma_value = DFS().visit_topdown(child,"")
+                if cl>1 :
+                    if tree.children[i+1].data== "oracc_atf_lem_line__guide_word":
+                        guide_word = DFS().visit_topdown(tree.children[i+1],"")
+                self.result.append((lemma_value,guide_word))
+            i = i+1
+
 class ATF_Preprocessor:
 
     def __init__(self):
@@ -139,7 +159,7 @@ class ATF_Preprocessor:
             if debug:
                 print("successfully parsed: " +atf)
                 print("----------------------------------------------------------------------")
-            return atf,None
+            return atf,tree.data
 
         except Exception :
             if debug:
@@ -155,36 +175,46 @@ class ATF_Preprocessor:
                 tree = self.LINE_PARSER2.parse(atf)
 
                 #print(tree.pretty())
+                if tree.data == "lem_line":
+                    output = dict()
+                    lemmas_and_guidwords = ""
+                    lemmas_and_guidwords = Get_Lemma_Values_and_Guidwords()
+                    lemmas_and_guidwords.result = []
+                    lemmas_and_guidwords_array = lemmas_and_guidwords.visit(tree)
+                    lemmas_and_guidwords_array = lemmas_and_guidwords.result
+                    print(lemmas_and_guidwords_array)
+                    return lemmas_and_guidwords_array,tree.data
 
-
-                Convert_Line_Dividers().visit(tree)
-                Convert_Legacy_Grammar_Signs().visit(tree)
-
-                Strip_Signs().visit(tree)
-
-                line_serializer = Line_Serializer()
-                line_serializer.visit_topdown(tree)
-                converted_line = line_serializer.line.strip(" ")
-
-                if debug:
-                    print("converted line as "+tree.data+" --> '" + converted_line + "'")
-
-                try:
-                    tree3 = self.LINE_PARSER.parse(converted_line)
-                    if debug:
-                        print('successfully parsed converted line')
-                    print(converted_line)
                     if debug:
                         print("----------------------------------------------------------------------")
 
-                    return converted_line,tree.data
+                else:
+                    Convert_Line_Dividers().visit(tree)
+                    Convert_Legacy_Grammar_Signs().visit(tree)
 
-                except Exception as e:
-                    print("\tcould not parse converted line")
+                    Strip_Signs().visit(tree)
+
+                    line_serializer = Line_Serializer()
+                    line_serializer.visit_topdown(tree)
+                    converted_line = line_serializer.line.strip(" ")
+
+                    try:
+                        tree3 = self.LINE_PARSER.parse(converted_line)
+                        if debug:
+                            print('successfully parsed converted line')
+                        print(converted_line)
+                        if debug:
+                            print("----------------------------------------------------------------------")
+
+                        return converted_line,tree.data
+
+                    except Exception as e:
+                        print("\tcould not parse converted line")
+                        if debug:
+                            traceback.print_exc(file=sys.stdout)
+
                     if debug:
-                        traceback.print_exc(file=sys.stdout)
-
-
+                        print("converted line as " + tree.data + " --> '" + converted_line + "'")
 
             except:
                 error = "could not convert line"

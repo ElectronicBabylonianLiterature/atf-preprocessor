@@ -6,6 +6,8 @@ import traceback
 import glob
 import unittest
 import argparse
+import json
+import codecs
 
 from lark import Lark
 from lark import Tree, Transformer, Visitor
@@ -106,8 +108,8 @@ if __name__ == '__main__':
 
     atf_preprocessor = ATF_Preprocessor()
 
-    atf_preprocessor.process_line("#lem: u; +appāru[reed-bed]N$",True)
-    #atf_preprocessor.process_line("@translation parallel en project",True)
+    #atf_preprocessor.process_line("#lem: X; attallû[eclipse]N; iššakkan[take place]V; šar[king]N; imâtma[die]V",True)
+    #atf_preprocessor.process_line("#lem: mīlū[flood]N; ina[in]PRP; nagbi[source]N; ipparrasū[cut (off)]V; mātu[land]N; ana[according to]PRP; mātu[land]N; +hâqu[go]V$ihâq-ma; šalāmu[peace]N; šakin[displayed]AJ",True)
 
 
     parser = argparse.ArgumentParser(description='Converts ATF-files to eBL-ATF standard.')
@@ -129,15 +131,30 @@ if __name__ == '__main__':
 
             converted_lines = atf_preprocessor.convert_lines(filepath, debug)
 
+            result = dict()
+            result['transliteration'] = []
+            result['lemmatization'] = []
+
             if args.output:
                 split = filepath.split("\\")
                 filename = split[-1]
+                filename = filename.split(".")[0]
+                for c_line,c_type in converted_lines:
+                    if c_type == "lem_line":
+                        lemma_line = []
+                        result['lemmatization'].append(lemma_line)
+                        for pair in c_line:
+                            lemma_line.append({"value":pair[0],"uniqueLemma":pair[1]})
 
-                f = open(args.output + "/" + filename, "wb")
-                for c_line in converted_lines:
-                    c_line=c_line+"\n"
-                    f.write(c_line.encode('utf-8'))
-                f.close()
+
+                    else:
+                        result['transliteration'].append(c_line)
+
+
+                json_string = json.dumps(result, ensure_ascii=False).encode('utf8')
+
+                with open(args.output + "/" + filename+".json", "w", encoding='utf8') as outputfile:
+                    json.dump(result,outputfile,ensure_ascii=False)
 
 
 
