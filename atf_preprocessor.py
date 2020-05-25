@@ -156,6 +156,7 @@ class ATF_Preprocessor:
                 raise Exception
 
             tree = self.LINE_PARSER.parse(atf)
+            print(atf)
             if debug:
                 print("successfully parsed: " +atf)
                 print("----------------------------------------------------------------------")
@@ -182,7 +183,6 @@ class ATF_Preprocessor:
                     lemmas_and_guidwords.result = []
                     lemmas_and_guidwords_array = lemmas_and_guidwords.visit(tree)
                     lemmas_and_guidwords_array = lemmas_and_guidwords.result
-                    print(lemmas_and_guidwords_array)
                     return lemmas_and_guidwords_array,tree.data
 
                     if debug:

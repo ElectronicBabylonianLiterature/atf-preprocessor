@@ -8,10 +8,14 @@ import unittest
 import argparse
 import json
 import codecs
-
+from pymongo import MongoClient
 from lark import Lark
 from lark import Tree, Transformer, Visitor
 from atf_preprocessor import ATF_Preprocessor
+from dotenv import load_dotenv
+
+class LemmatizationError(Exception):
+   pass
 
 
 class TestConverter(unittest.TestCase):
@@ -105,10 +109,14 @@ class TestConverter(unittest.TestCase):
 
 if __name__ == '__main__':
 
+    load_dotenv()
+    client = MongoClient(os.getenv("MONGODB_URI"))
+    db = client.get_database(os.getenv("MONGODB_DB"))
+
 
     atf_preprocessor = ATF_Preprocessor()
 
-    #atf_preprocessor.process_line("#lem: X; attallû[eclipse]N; iššakkan[take place]V; šar[king]N; imâtma[die]V",True)
+    atf_preprocessor.process_line("#lem: X; attallû[eclipse]N; iššakkan[take place]V; šar[king]N; imâtma[die]V",True)
     #atf_preprocessor.process_line("#lem: mīlū[flood]N; ina[in]PRP; nagbi[source]N; ipparrasū[cut (off)]V; mātu[land]N; ana[according to]PRP; mātu[land]N; +hâqu[go]V$ihâq-ma; šalāmu[peace]N; šakin[displayed]AJ",True)
 
 
@@ -139,13 +147,44 @@ if __name__ == '__main__':
                 split = filepath.split("\\")
                 filename = split[-1]
                 filename = filename.split(".")[0]
-                for c_line,c_type in converted_lines:
-                    if c_type == "lem_line":
-                        lemma_line = []
-                        result['lemmatization'].append(lemma_line)
-                        for pair in c_line:
-                            lemma_line.append({"value":pair[0],"uniqueLemma":pair[1]})
 
+
+                for c_line,c_type in converted_lines:
+
+                    if c_type == "lem_line":
+                        wrong_lemmatization = False
+                        lemma_line = []
+                        for pair in c_line :
+
+                            oracc_lemma = pair[0]
+                            oracc_guideword = pair[1]
+
+                            try:
+
+                                if oracc_guideword == "":
+                                    wrong_lemmatization = True
+                                    raise LemmatizationError("Incompatible lemmatization: No guide word to oracc lemma '"+oracc_lemma+"' present")
+
+                                unique_lemmas = []
+                                for entry in db.get_collection('words').find({"oraccWords.guideWord": oracc_guideword},{"_id"}):
+                                    unique_lemmas.append(entry['_id'])
+
+                                for entry in db.get_collection('words').find({"oraccWords.lemma": oracc_lemma},{"_id"}):
+                                    if entry['_id'] not in unique_lemmas:
+                                        unique_lemmas.append(entry['_id'])
+
+                                if len(unique_lemmas) == 0:
+                                    wrong_lemmatization = True
+                                    raise LemmatizationError("Incompatible lemmatization: No eBL word found to oracc lemma or guide word ("+oracc_lemma+" : "+oracc_guideword+")")
+
+                                else:
+                                    lemma_line.append({"value":pair[0],"uniqueLemma":unique_lemmas})
+                            except Exception as e:
+                                print(e)
+
+
+
+                        result['lemmatization'].append(lemma_line)
 
                     else:
                         result['transliteration'].append(c_line)

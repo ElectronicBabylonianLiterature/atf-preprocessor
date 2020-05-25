@@ -3,3 +3,4 @@ test-files/
 convert/
 output/
 __pycache__
+.env
