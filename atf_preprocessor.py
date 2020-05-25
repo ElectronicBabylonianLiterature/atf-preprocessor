@@ -153,6 +153,7 @@ class ATF_Preprocessor:
         try:
 
             if atf.startswith("#lem"):
+                print(atf)
                 raise Exception
 
             tree = self.LINE_PARSER.parse(atf)
