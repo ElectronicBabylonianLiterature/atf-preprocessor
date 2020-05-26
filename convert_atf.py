@@ -17,6 +17,9 @@ from dotenv import load_dotenv
 class LemmatizationError(Exception):
    pass
 
+POS_TAGS  = ["REL" , "DET" , "CNJ" , "MOD" , "PRP" , "SBJ" , "AJ", "AV" , "NU" , "DP" , "IP" , "PP" , "RP" , "XP" , "QP" ,"DN" , "AN" , "CN" , "EN" , "FN" , "GN" , "LN", "MN" , "ON" , "PN" , "QN" , "RN" , "SN" , "TN" , "WN" ,"YN" , "N" , "V" , "J"]
+
+not_lemmatized = {}
 
 class TestConverter(unittest.TestCase):
 
@@ -116,7 +119,7 @@ if __name__ == '__main__':
 
     atf_preprocessor = ATF_Preprocessor()
 
-    atf_preprocessor.process_line("#lem: X; attallû[eclipse]N; iššakkan[take place]V; šar[king]N; imâtma[die]V",True)
+    #atf_preprocessor.process_line("#lem: X; attallû[eclipse]N; iššakkan[take place]V; šar[king]N; imâtma[die]V",True)
     #atf_preprocessor.process_line("#lem: mīlū[flood]N; ina[in]PRP; nagbi[source]N; ipparrasū[cut (off)]V; mātu[land]N; ana[according to]PRP; mātu[land]N; +hâqu[go]V$ihâq-ma; šalāmu[peace]N; šakin[displayed]AJ",True)
 
 
@@ -125,6 +128,8 @@ if __name__ == '__main__':
                         help='path of the input directory')
     parser.add_argument('-o', "--output", required=False,
                         help='path of the output directory')
+    parser.add_argument('-g', "--glossary", required=True,
+                        help='path to the glossary file')
     parser.add_argument('-t', "--test", required=False, default=False, action='store_true',
                         help='runs all unit-tests')
     parser.add_argument('-v', "--verbose", required=False, default=False, action='store_true',
@@ -133,6 +138,41 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     debug = args.verbose
+
+    lemmas_cfforms = dict()
+    cfforms_senses = dict()
+    cfform_guideword = dict()
+
+    # read glossary
+    with open(args.glossary, "r", encoding='utf8') as f:
+        for line in f.readlines():
+
+            if line.startswith("@entry"):
+                split = line.split(" ")
+                cfform = split[1]
+                guidword = split[2].rstrip("]").lstrip("[")
+                cfform_guideword[cfform] = guidword
+
+            if line.startswith("@form"):
+                split = line.split(" ")
+                lemma = split[2].lstrip("$").rstrip("\n")
+                lemmas_cfforms[lemma] = cfform.strip()
+
+            if line.startswith("@sense"):
+                split = line.split(" ")
+
+                for s in split:
+                    if s in POS_TAGS:
+                        pos_tag = s
+
+                split2 = line.split(pos_tag)
+                sense = split2[1].rstrip("\n")
+                if not cfform in cfforms_senses:
+                    cfforms_senses[cfform] = [sense.strip()]
+                else:
+                    cfforms_senses[cfform].append(sense.strip())
+
+
 
     for filepath in glob.glob(os.path.join(args.input, '*.atf')):
         with open(filepath, 'r') as f:
@@ -159,10 +199,14 @@ if __name__ == '__main__':
                             oracc_lemma = pair[0]
                             oracc_guideword = pair[1]
 
+                            if "//" in oracc_guideword:
+                                oracc_guideword = oracc_guideword.split("//")[0]
+
                             try:
 
                                 if oracc_guideword == "":
                                     wrong_lemmatization = True
+                                    not_lemmatized[oracc_lemma] = True
                                     raise LemmatizationError("Incompatible lemmatization: No guide word to oracc lemma '"+oracc_lemma+"' present")
 
                                 unique_lemmas = []
@@ -174,14 +218,40 @@ if __name__ == '__main__':
                                         unique_lemmas.append(entry['_id'])
 
                                 if len(unique_lemmas) == 0:
+                                    try:
+                                        citation_form = lemmas_cfforms[oracc_lemma]
+                                        guideword = cfform_guideword[citation_form]
+                                        if "//" in guideword:
+                                            guideword = guideword.split("//")[0]
+                                        senses = cfforms_senses[citation_form]
+
+                                        if senses != None and oracc_guideword in senses:
+
+                                            for entry in db.get_collection('words').find({"oraccWords.guideWord": guideword}, {"_id"}):
+                                                unique_lemmas.append(entry['_id'])
+
+                                            for entry in db.get_collection('words').find({"oraccWords.lemma": citation_form}, {"_id"}):
+                                                if entry['_id'] not in unique_lemmas:
+                                                    unique_lemmas.append(entry['_id'])
+
+                                            for entry in db.get_collection('words').find({"oraccWords.lemma": oracc_lemma}, {"_id"}):
+                                                if entry['_id'] not in unique_lemmas:
+                                                    unique_lemmas.append(entry['_id'])
+
+                                    except:
+                                        not_lemmatized[oracc_lemma] = True
+                                        print("Incompatible lemmatization: No citation form found in the glossary for '"+oracc_lemma+"'")
+
+
+                                if len(unique_lemmas) == 0:
                                     wrong_lemmatization = True
+                                    not_lemmatized[oracc_lemma] = True
                                     raise LemmatizationError("Incompatible lemmatization: No eBL word found to oracc lemma or guide word ("+oracc_lemma+" : "+oracc_guideword+")")
 
                                 else:
                                     lemma_line.append({"value":pair[0],"uniqueLemma":unique_lemmas})
                             except Exception as e:
                                 print(e)
-
 
 
                         result['lemmatization'].append(lemma_line)
@@ -195,7 +265,9 @@ if __name__ == '__main__':
                 with open(args.output + "/" + filename+".json", "w", encoding='utf8') as outputfile:
                     json.dump(result,outputfile,ensure_ascii=False)
 
-
+                with open(args.output + "/not_lemmatized_" + filename+".txt", "w", encoding='utf8') as outputfile:
+                    for key in not_lemmatized:
+                        outputfile.write(key+"\n")
 
 
 

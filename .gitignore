@@ -2,5 +2,7 @@ bfg-1.13.0.jar
 test-files/
 convert/
 output/
+glossary/
 __pycache__
 .env
+notes.txt
