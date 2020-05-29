@@ -121,6 +121,7 @@ if __name__ == '__main__':
 
     #atf_preprocessor.process_line("#lem: X; attallû[eclipse]N; iššakkan[take place]V; šar[king]N; imâtma[die]V",True)
     #atf_preprocessor.process_line("#lem: mīlū[flood]N; ina[in]PRP; nagbi[source]N; ipparrasū[cut (off)]V; mātu[land]N; ana[according to]PRP; mātu[land]N; +hâqu[go]V$ihâq-ma; šalāmu[peace]N; šakin[displayed]AJ",True)
+    atf_preprocessor.process_line("1. [*] AN#.GE₆ GAR-ma U₄ ŠU₂{+up} * AN.GE₆ GAR-ma {d}IŠKUR KA-šu₂ ŠUB{+di} * AN.GE₆",True)
 
 
     parser = argparse.ArgumentParser(description='Converts ATF-files to eBL-ATF standard.')
@@ -189,12 +190,20 @@ if __name__ == '__main__':
                 filename = filename.split(".")[0]
 
 
-                for c_line,c_type in converted_lines:
+                for line in converted_lines:
+                    print(line['c_type'])
+                    if line['c_type'] == "lem_line":
 
-                    if c_type == "lem_line":
+
                         wrong_lemmatization = False
                         lemma_line = []
-                        for pair in c_line :
+
+                        print(len(last_transliteration))
+                        print(last_transliteration)
+                        print(len(line['c_array']))
+                        print(line['c_array'])
+
+                        for pair in line['c_array'] :
 
                             oracc_lemma = pair[0]
                             oracc_guideword = pair[1]
@@ -257,7 +266,8 @@ if __name__ == '__main__':
                         result['lemmatization'].append(lemma_line)
 
                     else:
-                        result['transliteration'].append(c_line)
+                        last_transliteration = line['c_array']
+                        result['transliteration'].append(line['c_line'])
 
 
                 json_string = json.dumps(result, ensure_ascii=False).encode('utf8')

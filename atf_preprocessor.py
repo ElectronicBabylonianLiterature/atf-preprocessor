@@ -100,6 +100,7 @@ class DFS(Visitor):
 
 class Line_Serializer(Visitor):
   line = ""
+
   def text_line(self, tree):
     assert tree.data == "text_line"
     result = DFS().visit_topdown(tree,"")
@@ -114,19 +115,34 @@ class Line_Serializer(Visitor):
 
 class Get_Line_Number(Visitor):
   nr = ""
+
   def oracc_atf_text_line__single_line_number(self, tree):
-    assert tree.data == "oracc_atf_text_line__single_line_number"
-    result = DFS().visit_topdown(tree, "")
-    self.nr += result
+      assert tree.data == "oracc_atf_text_line__single_line_number"
+      result = DFS().visit_topdown(tree, "")
+      self.nr += result
 
-    return result
+      return result
 
 
-class Get_Lemma_Values_and_Guidwords(Visitor):
+class Get_Words(Visitor):
+    result = []
+
+    def oracc_atf_text_line__word(self, tree):
+        assert tree.data == "oracc_atf_text_line__word"
+
+
+        word = ""
+        for child in tree.children:
+            wordpart = DFS().visit_topdown(child,"")
+            word += wordpart
+
+        self.result.append(word)
+
+
+class Get_Lemma_Values_and_Guidewords(Visitor):
     result = []
 
     def oracc_atf_lem_line__lemma(self, tree):
-        lemma_line = []
         assert tree.data == "oracc_atf_lem_line__lemma"
         lemma_value = ""
         guide_word = ""
@@ -161,7 +177,7 @@ class ATF_Preprocessor:
             if debug:
                 print("successfully parsed: " +atf)
                 print("----------------------------------------------------------------------")
-            return atf,tree.data
+            return atf,None,tree.data
 
         except Exception :
             if debug:
@@ -177,14 +193,14 @@ class ATF_Preprocessor:
                 tree = self.LINE_PARSER2.parse(atf)
 
                 #print(tree.pretty())
+
                 if tree.data == "lem_line":
                     output = dict()
-                    lemmas_and_guidwords = ""
-                    lemmas_and_guidwords = Get_Lemma_Values_and_Guidwords()
-                    lemmas_and_guidwords.result = []
-                    lemmas_and_guidwords_array = lemmas_and_guidwords.visit(tree)
-                    lemmas_and_guidwords_array = lemmas_and_guidwords.result
-                    return lemmas_and_guidwords_array,tree.data
+                    lemmas_and_guidewords_serializer = Get_Lemma_Values_and_Guidewords()
+                    lemmas_and_guidewords_serializer.result = []
+                    lemmas_and_guidewords_array = lemmas_and_guidewords_serializer.visit(tree)
+                    lemmas_and_guidewords_array = lemmas_and_guidewords_serializer.result
+                    return None,lemmas_and_guidewords_array,tree.data
 
                     if debug:
                         print("----------------------------------------------------------------------")
@@ -199,6 +215,12 @@ class ATF_Preprocessor:
                     line_serializer.visit_topdown(tree)
                     converted_line = line_serializer.line.strip(" ")
 
+
+                    words_serializer = Get_Words()
+                    words_serializer.result = []
+                    words_serializer.visit_topdown(tree)
+                    converted_line_array = words_serializer.result
+
                     try:
                         tree3 = self.LINE_PARSER.parse(converted_line)
                         if debug:
@@ -207,7 +229,7 @@ class ATF_Preprocessor:
                         if debug:
                             print("----------------------------------------------------------------------")
 
-                        return converted_line,tree.data
+                        return converted_line,converted_line_array,tree.data
 
                     except Exception as e:
                         print("\tcould not parse converted line")
@@ -223,7 +245,7 @@ class ATF_Preprocessor:
                 print(error+": "+atf,'red')
                 traceback.print_exc(file=sys.stdout)
 
-                return(error+": "+atf),None
+                return(error+": "+atf),None,None
 
 
 
@@ -237,13 +259,10 @@ class ATF_Preprocessor:
 
         lines = atf_.split("\n")
 
-
         processed_lines = []
         for line in lines:
-            # print(line)
-            p_line,type = self.process_line(line,debug)
-            if p_line != None:
-                processed_lines.append((p_line,type))
+            c_line,c_array,c_type = self.process_line(line,debug)
+            processed_lines.append({"c_line":c_line,"c_array":c_array,"c_type":c_type})
 
         return processed_lines
 
