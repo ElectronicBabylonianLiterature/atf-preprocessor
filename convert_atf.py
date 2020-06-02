@@ -259,6 +259,12 @@ if __name__ == '__main__':
 
                                 else:
                                     lemma_line.append({"value":pair[0],"uniqueLemma":unique_lemmas})
+
+                                    cnt = 0
+                                    for line in lemma_line:
+                                        line['value'] = last_transliteration[cnt]
+                                        cnt+=1
+
                             except Exception as e:
                                 print(e)
 
