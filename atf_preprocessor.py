@@ -126,10 +126,9 @@ class Get_Line_Number(Visitor):
 
 class Get_Words(Visitor):
     result = []
-
+    prefix = "oracc"
     def oracc_atf_text_line__word(self, tree):
         assert tree.data == "oracc_atf_text_line__word"
-
 
         word = ""
         for child in tree.children:
@@ -174,10 +173,18 @@ class ATF_Preprocessor:
 
             tree = self.LINE_PARSER.parse(atf)
             print(atf)
+            tree = self.LINE_PARSER2.parse(atf)
+            print(tree.pretty())
+
+            words_serializer = Get_Words()
+            words_serializer.result = []
+            words_serializer.visit_topdown(tree)
+            converted_line_array = words_serializer.result
+
             if debug:
                 print("successfully parsed: " +atf)
                 print("----------------------------------------------------------------------")
-            return atf,None,tree.data
+            return atf,converted_line_array,tree.data
 
         except Exception :
             if debug:
@@ -262,6 +269,7 @@ class ATF_Preprocessor:
         processed_lines = []
         for line in lines:
             c_line,c_array,c_type = self.process_line(line,debug)
+            print(c_array)
             processed_lines.append({"c_line":c_line,"c_array":c_array,"c_type":c_type})
 
         return processed_lines

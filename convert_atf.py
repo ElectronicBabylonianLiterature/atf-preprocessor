@@ -198,10 +198,12 @@ if __name__ == '__main__':
                         wrong_lemmatization = False
                         lemma_line = []
 
-                        print(len(last_transliteration))
                         print(last_transliteration)
-                        print(len(line['c_array']))
                         print(line['c_array'])
+
+                        print(len(line['c_array']))
+                        print(len(last_transliteration))
+
 
                         for pair in line['c_array'] :
 
