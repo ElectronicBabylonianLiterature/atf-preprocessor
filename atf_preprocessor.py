@@ -199,7 +199,7 @@ class ATF_Preprocessor:
             try:
                 tree = self.LINE_PARSER2.parse(atf)
 
-                #print(tree.pretty())
+                print(tree.pretty())
 
                 if tree.data == "lem_line":
                     output = dict()

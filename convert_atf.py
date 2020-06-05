@@ -14,6 +14,20 @@ from lark import Tree, Transformer, Visitor
 from atf_preprocessor import ATF_Preprocessor
 from dotenv import load_dotenv
 
+import requests
+
+
+testdict = {}
+testdict['notes'] = ""
+testdict['transliteration'] = "1. [DIŠ] AN#.GE₆ GAR-ma U₄ ŠU₂{+up} DIŠ"
+
+headers = { 'authorization': "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IlJUTkdOalF6UlVNeE1FRXdPRVE0UXpnM1FUQXlSVFUxUlVJNE5UWXlNREk1TjBOQ01FTTJNZyJ9.eyJpc3MiOiJodHRwczovL2F1dGguZWJhYnlsb24ub3JnLyIsInN1YiI6ImF1dGgwfDVlODZlNzVkMjAyOGU2MGM2NzY2OThjYyIsImF1ZCI6WyJkaWN0aW9uYXJ5LWFwaSIsImh0dHBzOi8vZWxlY3Ryb25pYy1iYWJ5bG9uaWFuLWxpdGVyYXR1cmUuZXUuYXV0aDAuY29tL3VzZXJpbmZvIl0sImlhdCI6MTU5MTM0ODc1NSwiZXhwIjoxNTkxNDM1MTU1LCJhenAiOiJYX0djS21SZV9HOEYtek00TmVFM3JXSlRkY0NnRmtvNyIsInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwgb2ZmbGluZV9hY2Nlc3MgcmVhZDp3b3JkcyByZWFkOmZyYWdtZW50cyB0cmFuc2xpdGVyYXRlOmZyYWdtZW50cyByZWFkOldHTC1mb2xpb3MgcmVhZDpGV0ctZm9saW9zIHJlYWQ6RUwtZm9saW9zIHJlYWQ6QUtHLWZvbGlvcyBsZW1tYXRpemU6ZnJhZ21lbnRzIGFjY2VzczpiZXRhIHJlYWQ6YmlibGlvZ3JhcGh5IHdyaXRlOmJpYmxpb2dyYXBoeSByZWFkOkNCLWZvbGlvcyByZWFkOkpTLWZvbGlvcyBhbm5vdGF0ZTpmcmFnbWVudHMgcmVhZDpVU0stZm9saW9zIHJlYWQ6SUxGLWZvbGlvcyByZWFkOlJCLWZvbGlvcyJ9.AvhvK4qgsE7jUibmoOBh0uQJA25B6rWM0FcassQdV1Xun8WRnW9SNXFwkx5YgPACS4qcmWyYB5r3YpBkPb34djTM0bQNV_AndGJT81o-nOtNoX0GPQ5-J4b2fdvr48ymvzhVeUneTSC3-V0lW0q1sNFlVRnBpPmK2Oo0TOYzjoQcQc2t__zxvV1r3kxvDspeGD9z4wdor1zo0q6KS8nTlw1gcSNc4xGhg6q8sKWDHtnkFBj-f6LLE43u9wOOYmRw12HsuS8qwVPgkHdw92cV7LjW3VjSRpIcH7AN2tp213BPxqGcVm3QyK8dUXSWBLWuo0-rU_XjQzYT4UBdXzUfJg" }
+
+r = requests.post('https://api.ebabylon.org/fragments/Tobias.Test.Fragment/transliteration', headers = headers,json=testdict)
+
+print(r.status_code)
+
+print(r.json())
 class LemmatizationError(Exception):
    pass
 
@@ -262,6 +276,7 @@ if __name__ == '__main__':
                                 else:
                                     lemma_line.append({"value":pair[0],"uniqueLemma":unique_lemmas})
 
+                                    # swap lemma with word
                                     cnt = 0
                                     for line in lemma_line:
                                         line['value'] = last_transliteration[cnt]
