@@ -174,7 +174,7 @@ class ATF_Preprocessor:
             tree = self.LINE_PARSER.parse(atf)
             print(atf)
             tree = self.LINE_PARSER2.parse(atf)
-            print(tree.pretty())
+            #print(tree.pretty())
 
             words_serializer = Get_Words()
             words_serializer.result = []
@@ -199,7 +199,7 @@ class ATF_Preprocessor:
             try:
                 tree = self.LINE_PARSER2.parse(atf)
 
-                print(tree.pretty())
+                #print(tree.pretty())
 
                 if tree.data == "lem_line":
                     output = dict()
@@ -269,7 +269,6 @@ class ATF_Preprocessor:
         processed_lines = []
         for line in lines:
             c_line,c_array,c_type = self.process_line(line,debug)
-            print(c_array)
             processed_lines.append({"c_line":c_line,"c_array":c_array,"c_type":c_type})
 
         return processed_lines

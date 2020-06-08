@@ -17,17 +17,7 @@ from dotenv import load_dotenv
 import requests
 
 
-testdict = {}
-testdict['notes'] = ""
-testdict['transliteration'] = "1. [DIŠ] AN#.GE₆ GAR-ma U₄ ŠU₂{+up} DIŠ"
 
-headers = { 'authorization': "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IlJUTkdOalF6UlVNeE1FRXdPRVE0UXpnM1FUQXlSVFUxUlVJNE5UWXlNREk1TjBOQ01FTTJNZyJ9.eyJpc3MiOiJodHRwczovL2F1dGguZWJhYnlsb24ub3JnLyIsInN1YiI6ImF1dGgwfDVlODZlNzVkMjAyOGU2MGM2NzY2OThjYyIsImF1ZCI6WyJkaWN0aW9uYXJ5LWFwaSIsImh0dHBzOi8vZWxlY3Ryb25pYy1iYWJ5bG9uaWFuLWxpdGVyYXR1cmUuZXUuYXV0aDAuY29tL3VzZXJpbmZvIl0sImlhdCI6MTU5MTM0ODc1NSwiZXhwIjoxNTkxNDM1MTU1LCJhenAiOiJYX0djS21SZV9HOEYtek00TmVFM3JXSlRkY0NnRmtvNyIsInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwgb2ZmbGluZV9hY2Nlc3MgcmVhZDp3b3JkcyByZWFkOmZyYWdtZW50cyB0cmFuc2xpdGVyYXRlOmZyYWdtZW50cyByZWFkOldHTC1mb2xpb3MgcmVhZDpGV0ctZm9saW9zIHJlYWQ6RUwtZm9saW9zIHJlYWQ6QUtHLWZvbGlvcyBsZW1tYXRpemU6ZnJhZ21lbnRzIGFjY2VzczpiZXRhIHJlYWQ6YmlibGlvZ3JhcGh5IHdyaXRlOmJpYmxpb2dyYXBoeSByZWFkOkNCLWZvbGlvcyByZWFkOkpTLWZvbGlvcyBhbm5vdGF0ZTpmcmFnbWVudHMgcmVhZDpVU0stZm9saW9zIHJlYWQ6SUxGLWZvbGlvcyByZWFkOlJCLWZvbGlvcyJ9.AvhvK4qgsE7jUibmoOBh0uQJA25B6rWM0FcassQdV1Xun8WRnW9SNXFwkx5YgPACS4qcmWyYB5r3YpBkPb34djTM0bQNV_AndGJT81o-nOtNoX0GPQ5-J4b2fdvr48ymvzhVeUneTSC3-V0lW0q1sNFlVRnBpPmK2Oo0TOYzjoQcQc2t__zxvV1r3kxvDspeGD9z4wdor1zo0q6KS8nTlw1gcSNc4xGhg6q8sKWDHtnkFBj-f6LLE43u9wOOYmRw12HsuS8qwVPgkHdw92cV7LjW3VjSRpIcH7AN2tp213BPxqGcVm3QyK8dUXSWBLWuo0-rU_XjQzYT4UBdXzUfJg" }
-
-r = requests.post('https://api.ebabylon.org/fragments/Tobias.Test.Fragment/transliteration', headers = headers,json=testdict)
-
-print(r.status_code)
-
-print(r.json())
 class LemmatizationError(Exception):
    pass
 
@@ -124,11 +114,28 @@ class TestConverter(unittest.TestCase):
             lines = atf_preprocessor.convert_lines("test-files/cccp_3_1_21_test.atf",False)
             self.assertTrue(len(lines) == 90) # one invalid line removed
 
+def get_ebl_transliteration(line):
+
+    dict = {}
+    dict['notes'] = ""
+    dict['transliteration'] = line
+
+    headers = {'authorization': os.getenv("AUTH0_TOKEN")}
+    test_url = 'https://api.ebabylon.org/fragments/Tobias.Test.Fragment/transliteration'
+    r = requests.post(test_url, headers=headers, json=dict)
+
+    print(r.json())
+
+    return r.json()['text']['lines']
+
+
 if __name__ == '__main__':
 
     load_dotenv()
     client = MongoClient(os.getenv("MONGODB_URI"))
     db = client.get_database(os.getenv("MONGODB_DB"))
+
+
 
 
     atf_preprocessor = ATF_Preprocessor()
@@ -203,21 +210,14 @@ if __name__ == '__main__':
                 filename = split[-1]
                 filename = filename.split(".")[0]
 
-
                 for line in converted_lines:
                     print(line['c_type'])
+
                     if line['c_type'] == "lem_line":
 
-
                         wrong_lemmatization = False
+                        all_unique_lemmas = []
                         lemma_line = []
-
-                        print(last_transliteration)
-                        print(line['c_array'])
-
-                        print(len(line['c_array']))
-                        print(len(last_transliteration))
-
 
                         for pair in line['c_array'] :
 
@@ -228,13 +228,13 @@ if __name__ == '__main__':
                                 oracc_guideword = oracc_guideword.split("//")[0]
 
                             try:
+                                unique_lemmas = []
 
                                 if oracc_guideword == "":
                                     wrong_lemmatization = True
                                     not_lemmatized[oracc_lemma] = True
-                                    raise LemmatizationError("Incompatible lemmatization: No guide word to oracc lemma '"+oracc_lemma+"' present")
+                                    print("Incompatible lemmatization: No guide word to oracc lemma '"+oracc_lemma+"' present using original value")
 
-                                unique_lemmas = []
                                 for entry in db.get_collection('words').find({"oraccWords.guideWord": oracc_guideword},{"_id"}):
                                     unique_lemmas.append(entry['_id'])
 
@@ -271,25 +271,40 @@ if __name__ == '__main__':
                                 if len(unique_lemmas) == 0:
                                     wrong_lemmatization = True
                                     not_lemmatized[oracc_lemma] = True
+                                    unique_lemmas.append(entry['_id'])
+
                                     raise LemmatizationError("Incompatible lemmatization: No eBL word found to oracc lemma or guide word ("+oracc_lemma+" : "+oracc_guideword+")")
 
                                 else:
-                                    lemma_line.append({"value":pair[0],"uniqueLemma":unique_lemmas})
-
-                                    # swap lemma with word
-                                    cnt = 0
-                                    for line in lemma_line:
-                                        line['value'] = last_transliteration[cnt]
-                                        cnt+=1
+                                    all_unique_lemmas.append(unique_lemmas)
 
                             except Exception as e:
                                 print(e)
 
+                        # join translation an lemma line:
+                        cnt = 0
+                        print(last_transliteration)
+                        print(all_unique_lemmas)
+                        for word in last_transliteration:
+                            line['value'] = last_transliteration[cnt]
+                            lemma_line.append({"value": word, "uniqueLemma": all_unique_lemmas[cnt]})
+                            cnt += 1
 
                         result['lemmatization'].append(lemma_line)
 
                     else:
-                        last_transliteration = line['c_array']
+
+                        if line['c_type'] == "text_line":
+                            ebl_lines = get_ebl_transliteration(line['c_line'])
+
+                            ebl_lemmatizable_words = []
+                            for ebl_word in ebl_lines[0]['content']:
+
+                                if "lemmatizable" in ebl_word:
+                                    ebl_lemmatizable_words.append(ebl_word['cleanValue'])
+
+                            last_transliteration = ebl_lemmatizable_words
+
                         result['transliteration'].append(line['c_line'])
 
 
