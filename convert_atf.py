@@ -124,8 +124,6 @@ def get_ebl_transliteration(line):
     test_url = 'https://api.ebabylon.org/fragments/Tobias.Test.Fragment/transliteration'
     r = requests.post(test_url, headers=headers, json=dict)
 
-    print(r.json())
-
     return r.json()['text']['lines']
 
 
@@ -300,7 +298,7 @@ if __name__ == '__main__':
                             ebl_lemmatizable_words = []
                             for ebl_word in ebl_lines[0]['content']:
 
-                                if "lemmatizable" in ebl_word:
+                                if "lemmatizable" in ebl_word and not ebl_word['cleanValue'] == "DIŠ":
                                     ebl_lemmatizable_words.append(ebl_word['cleanValue'])
 
                             last_transliteration = ebl_lemmatizable_words
