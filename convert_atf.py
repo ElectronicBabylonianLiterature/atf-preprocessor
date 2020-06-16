@@ -12,6 +12,7 @@ from pymongo import MongoClient
 from lark import Lark
 from lark import Tree, Transformer, Visitor
 from atf_preprocessor import ATF_Preprocessor
+from atf_preprocessor_util import Util
 from dotenv import load_dotenv
 
 import requests
@@ -201,7 +202,7 @@ if __name__ == '__main__':
 
             # write result output
             if debug:
-                print("writing output...")
+                Util.print_frame("writing output")
 
             result = dict()
             result['transliteration'] = []
@@ -219,6 +220,8 @@ if __name__ == '__main__':
                         wrong_lemmatization = False
                         all_unique_lemmas = []
                         lemma_line = []
+
+                        print("lem_line: ",line['c_array'])
 
                         for pair in line['c_array'] :
 
@@ -287,8 +290,12 @@ if __name__ == '__main__':
 
                         # join translation and lemma line:
                         cnt = 0
-                        print(last_transliteration)
-                        print(all_unique_lemmas)
+                        print("transliteration" , last_transliteration_line)
+                        print("ebl transliteration" , last_transliteration, len(last_transliteration))
+                        print("all_unique_lemmata" , all_unique_lemmas, len(all_unique_lemmas))
+                        print("----------------------------------------------------------------------")
+
+                        # only create lemmatization entry if both arrays have equal length?
                         for word in last_transliteration:
                             line['value'] = last_transliteration[cnt]
                             lemma_line.append({"value": word, "uniqueLemma": all_unique_lemmas[cnt]})
@@ -308,6 +315,7 @@ if __name__ == '__main__':
                                     ebl_lemmatizable_words.append(ebl_word['cleanValue'])
 
                             last_transliteration = ebl_lemmatizable_words
+                            last_transliteration_line = line['c_line']
 
                         result['transliteration'].append(line['c_line'])
 
