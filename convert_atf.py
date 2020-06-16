@@ -129,12 +129,10 @@ def get_ebl_transliteration(line):
 
 if __name__ == '__main__':
 
+    # connect to eBL-db
     load_dotenv()
     client = MongoClient(os.getenv("MONGODB_URI"))
     db = client.get_database(os.getenv("MONGODB_DB"))
-
-
-
 
     atf_preprocessor = ATF_Preprocessor()
 
@@ -142,7 +140,7 @@ if __name__ == '__main__':
     #atf_preprocessor.process_line("#lem: mīlū[flood]N; ina[in]PRP; nagbi[source]N; ipparrasū[cut (off)]V; mātu[land]N; ana[according to]PRP; mātu[land]N; +hâqu[go]V$ihâq-ma; šalāmu[peace]N; šakin[displayed]AJ",True)
     atf_preprocessor.process_line("1. [*] AN#.GE₆ GAR-ma U₄ ŠU₂{+up} * AN.GE₆ GAR-ma {d}IŠKUR KA-šu₂ ŠUB{+di} * AN.GE₆",True)
 
-
+    # cli arguments
     parser = argparse.ArgumentParser(description='Converts ATF-files to eBL-ATF standard.')
     parser.add_argument('-i', "--input", required=True,
                         help='path of the input directory')
@@ -193,11 +191,17 @@ if __name__ == '__main__':
                     cfforms_senses[cfform].append(sense.strip())
 
 
-
+    # read atf files from input folder
     for filepath in glob.glob(os.path.join(args.input, '*.atf')):
+
         with open(filepath, 'r') as f:
 
+            # convert all lines
             converted_lines = atf_preprocessor.convert_lines(filepath, debug)
+
+            # write result output
+            if debug:
+                print("writing output...")
 
             result = dict()
             result['transliteration'] = []
@@ -209,7 +213,6 @@ if __name__ == '__main__':
                 filename = filename.split(".")[0]
 
                 for line in converted_lines:
-                    print(line['c_type'])
 
                     if line['c_type'] == "lem_line":
 
@@ -231,7 +234,8 @@ if __name__ == '__main__':
                                 if oracc_guideword == "":
                                     wrong_lemmatization = True
                                     not_lemmatized[oracc_lemma] = True
-                                    print("Incompatible lemmatization: No guide word to oracc lemma '"+oracc_lemma+"' present using original value")
+                                    if debug:
+                                       print("Incompatible lemmatization: No guide word to oracc lemma '"+oracc_lemma+"' present using original value")
 
                                 for entry in db.get_collection('words').find({"oraccWords.guideWord": oracc_guideword},{"_id"}):
                                     unique_lemmas.append(entry['_id'])
@@ -263,7 +267,8 @@ if __name__ == '__main__':
 
                                     except:
                                         not_lemmatized[oracc_lemma] = True
-                                        print("Incompatible lemmatization: No citation form found in the glossary for '"+oracc_lemma+"'")
+                                        if debug:
+                                           print("Incompatible lemmatization: No citation form found in the glossary for '"+oracc_lemma+"'")
 
 
                                 if len(unique_lemmas) == 0:
@@ -277,9 +282,10 @@ if __name__ == '__main__':
                                     all_unique_lemmas.append(unique_lemmas)
 
                             except Exception as e:
-                                print(e)
+                                if debug:
+                                    print(e)
 
-                        # join translation an lemma line:
+                        # join translation and lemma line:
                         cnt = 0
                         print(last_transliteration)
                         print(all_unique_lemmas)
