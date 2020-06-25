@@ -127,6 +127,76 @@ def get_ebl_transliteration(line):
 
     return r.json()['text']['lines']
 
+def get_ebl_lemmata(oracc_lemma,oracc_guideword,all_unique_lemmas):
+
+    try:
+        unique_lemmas = []
+
+        if oracc_guideword == "":
+            wrong_lemmatization = True
+            not_lemmatized[oracc_lemma] = True
+            if debug:
+                print(
+                    "Incompatible lemmatization: No guide word to oracc lemma '" + oracc_lemma + "' present using original value")
+
+        for entry in db.get_collection('words').find({"oraccWords.guideWord": oracc_guideword}, {"_id"}):
+            unique_lemmas.append(entry['_id'])
+
+        for entry in db.get_collection('words').find({"oraccWords.lemma": oracc_lemma}, {"_id"}):
+            if entry['_id'] not in unique_lemmas:
+                unique_lemmas.append(entry['_id'])
+
+        for entry in db.get_collection('words').find({"guideWord": oracc_guideword}, {"_id"}):
+            if entry['_id'] not in unique_lemmas:
+                unique_lemmas.append(entry['_id'])
+
+        if len(unique_lemmas) == 0:
+            try:
+                citation_form = lemmas_cfforms[oracc_lemma]
+                guideword = cfform_guideword[citation_form]
+                if "//" in guideword:
+                    guideword = guideword.split("//")[0]
+                senses = cfforms_senses[citation_form]
+
+                if senses != None and oracc_guideword in senses:
+
+                    for entry in db.get_collection('words').find({"oraccWords.guideWord": guideword}, {"_id"}):
+                        unique_lemmas.append(entry['_id'])
+
+                    for entry in db.get_collection('words').find({"oraccWords.lemma": citation_form}, {"_id"}):
+                        if entry['_id'] not in unique_lemmas:
+                            unique_lemmas.append(entry['_id'])
+
+                    for entry in db.get_collection('words').find({"oraccWords.lemma": oracc_lemma}, {"_id"}):
+                        if entry['_id'] not in unique_lemmas:
+                            unique_lemmas.append(entry['_id'])
+
+                    for entry in db.get_collection('words').find({"guideWord": oracc_guideword}, {"_id"}):
+                        if entry['_id'] not in unique_lemmas:
+                            unique_lemmas.append(entry['_id'])
+
+
+            except:
+                not_lemmatized[oracc_lemma] = True
+                if debug:
+                    print(
+                        "Incompatible lemmatization: No citation form found in the glossary for '" + oracc_lemma + "'")
+
+        if len(unique_lemmas) == 0:
+            wrong_lemmatization = True
+            not_lemmatized[oracc_lemma] = True
+            unique_lemmas.append(entry['_id'])
+
+            raise LemmatizationError(
+                "Incompatible lemmatization: No eBL word found to oracc lemma or guide word (" + oracc_lemma + " : " + oracc_guideword + ")")
+
+        else:
+            all_unique_lemmas.append(unique_lemmas)
+
+    except Exception as e:
+        if debug:
+            print(e)
+
 def parse_glossary(args):
 
     lemmas_cfforms = dict()
@@ -226,7 +296,9 @@ if __name__ == '__main__':
                         all_unique_lemmas = []
                         lemma_line = []
 
-                        print("lem_line: ",line['c_array'])
+                        print("last_transliteration",last_transliteration, " length ",len(line['c_array']))
+
+                        print("lem_line: ",line['c_array']," length ",len(line['c_array']))
 
                         for pair in line['c_array'] :
 
@@ -236,72 +308,9 @@ if __name__ == '__main__':
                             if "//" in oracc_guideword:
                                 oracc_guideword = oracc_guideword.split("//")[0]
 
-                            try:
-                                unique_lemmas = []
+                            # get unique lemmata from ebl database
+                            get_ebl_lemmata(oracc_lemma,oracc_guideword,all_unique_lemmas)
 
-                                if oracc_guideword == "":
-                                    wrong_lemmatization = True
-                                    not_lemmatized[oracc_lemma] = True
-                                    if debug:
-                                       print("Incompatible lemmatization: No guide word to oracc lemma '"+oracc_lemma+"' present using original value")
-
-
-                                for entry in db.get_collection('words').find({"oraccWords.guideWord": oracc_guideword},{"_id"}):
-                                    unique_lemmas.append(entry['_id'])
-
-                                for entry in db.get_collection('words').find({"oraccWords.lemma": oracc_lemma},{"_id"}):
-                                    if entry['_id'] not in unique_lemmas:
-                                        unique_lemmas.append(entry['_id'])
-
-                                for entry in db.get_collection('words').find({"guideWord": oracc_guideword}, {"_id"}):
-                                    if entry['_id'] not in unique_lemmas:
-                                        unique_lemmas.append(entry['_id'])
-
-                                if len(unique_lemmas) == 0:
-                                    try:
-                                        citation_form = lemmas_cfforms[oracc_lemma]
-                                        guideword = cfform_guideword[citation_form]
-                                        if "//" in guideword:
-                                            guideword = guideword.split("//")[0]
-                                        senses = cfforms_senses[citation_form]
-
-                                        if senses != None and oracc_guideword in senses:
-
-                                            for entry in db.get_collection('words').find({"oraccWords.guideWord": guideword}, {"_id"}):
-                                                unique_lemmas.append(entry['_id'])
-
-                                            for entry in db.get_collection('words').find({"oraccWords.lemma": citation_form}, {"_id"}):
-                                                if entry['_id'] not in unique_lemmas:
-                                                    unique_lemmas.append(entry['_id'])
-
-                                            for entry in db.get_collection('words').find({"oraccWords.lemma": oracc_lemma}, {"_id"}):
-                                                if entry['_id'] not in unique_lemmas:
-                                                    unique_lemmas.append(entry['_id'])
-
-                                            for entry in db.get_collection('words').find({"guideWord": oracc_guideword}, {"_id"}):
-                                                if entry['_id'] not in unique_lemmas:
-                                                    unique_lemmas.append(entry['_id'])
-
-
-                                    except:
-                                        not_lemmatized[oracc_lemma] = True
-                                        if debug:
-                                           print("Incompatible lemmatization: No citation form found in the glossary for '"+oracc_lemma+"'")
-
-
-                                if len(unique_lemmas) == 0:
-                                    wrong_lemmatization = True
-                                    not_lemmatized[oracc_lemma] = True
-                                    unique_lemmas.append(entry['_id'])
-
-                                    raise LemmatizationError("Incompatible lemmatization: No eBL word found to oracc lemma or guide word ("+oracc_lemma+" : "+oracc_guideword+")")
-
-                                else:
-                                    all_unique_lemmas.append(unique_lemmas)
-
-                            except Exception as e:
-                                if debug:
-                                    print(e)
 
                         # join translation and lemma line:
                         cnt = 0
