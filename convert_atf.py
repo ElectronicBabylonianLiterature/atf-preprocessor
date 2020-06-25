@@ -16,7 +16,7 @@ from atf_preprocessor_util import Util
 from dotenv import load_dotenv
 
 import requests
-
+import time
 
 
 class LemmatizationError(Exception):
@@ -117,6 +117,7 @@ class TestConverter(unittest.TestCase):
 
 def get_ebl_transliteration(line):
 
+    time.sleep(1)
     dict = {}
     dict['notes'] = ""
     dict['transliteration'] = line
@@ -124,7 +125,6 @@ def get_ebl_transliteration(line):
     headers = {'authorization': os.getenv("AUTH0_TOKEN")}
     test_url = 'https://api.ebabylon.org/fragments/Tobias.Test.Fragment/transliteration'
     r = requests.post(test_url, headers=headers, json=dict)
-
     return r.json()['text']['lines']
 
 def get_ebl_lemmata(oracc_lemma,oracc_guideword,last_transliteration,all_unique_lemmas):
@@ -305,7 +305,7 @@ if __name__ == '__main__':
                         all_unique_lemmas = []
                         lemma_line = []
 
-                        print("last_transliteration",last_transliteration, " length ",len(line['c_array']))
+                        print("last_transliteration",last_transliteration, " length ",len(last_transliteration))
 
                         print("lem_line: ",line['c_array']," length ",len(line['c_array']))
 
@@ -324,7 +324,7 @@ if __name__ == '__main__':
                         print("ebl transliteration", last_transliteration, len(last_transliteration))
                         print("all_unique_lemmata", all_unique_lemmas, len(all_unique_lemmas))
 
-                        # join oracc_word and ebl unique lemmata
+                        # join oracc_word with ebl unique lemmata
                         oracc_word_ebl_lemmas = dict()
                         cnt = 0
                         if debug:
@@ -337,25 +337,19 @@ if __name__ == '__main__':
                         print("oracc_word_ebl_lemmas: ",oracc_word_ebl_lemmas)
                         print("----------------------------------------------------------------------")
 
-                        # join translation and lemma line:
-                        # cnt = 0
+                        # join ebl transliteration with lemma line:
+                        ebl_lines = get_ebl_transliteration(last_transliteration_line)
 
-                        #ebl_lines = get_ebl_transliteration(line['c_line'])
+                        for ebl_word in ebl_lines[0]['content']:
 
-                        #ebl_lemmatizable_words = []
-                        #for ebl_word in ebl_lines[0]['content']:
+                            unique_lemma = []
+                            if ebl_word['cleanValue'] in oracc_word_ebl_lemmas:
+                                unique_lemma = oracc_word_ebl_lemmas[ebl_word['cleanValue']]
 
-                        #    if "lemmatizable" in ebl_word and not ebl_word['cleanValue'] == "DIŠ":
-                        #        ebl_lemmatizable_words.append(ebl_word['cleanValue'])
+                            lemma_line.append({"value": ebl_word['cleanValue'], "uniqueLemma": unique_lemma })
 
-                        #
-                        # # only create lemmatization entry if both arrays have equal length?
-                        # for word in last_transliteration:
-                        #     line['value'] = last_transliteration[cnt]
-                        #     lemma_line.append({"value": word, "uniqueLemma": all_unique_lemmas[cnt]})
-                        #     cnt += 1
-                        #
-                        # result['lemmatization'].append(lemma_line)
+
+                        result['lemmatization'].append(lemma_line)
 
                     else:
 
