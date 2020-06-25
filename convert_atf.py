@@ -127,17 +127,24 @@ def get_ebl_transliteration(line):
 
     return r.json()['text']['lines']
 
-def get_ebl_lemmata(oracc_lemma,oracc_guideword,all_unique_lemmas):
+def get_ebl_lemmata(oracc_lemma,oracc_guideword,last_transliteration,all_unique_lemmas):
 
     try:
         unique_lemmas = []
 
         if oracc_guideword == "":
-            wrong_lemmatization = True
             not_lemmatized[oracc_lemma] = True
             if debug:
                 print(
-                    "Incompatible lemmatization: No guide word to oracc lemma '" + oracc_lemma + "' present using original value")
+                    "Incompatible lemmatization: No guideWord to oracc lemma '" + oracc_lemma + "' present")
+
+        # if "X" then add [] and return
+        if oracc_lemma == "X":
+            if debug:
+                print(
+                    "Oracc lemma was 'X' ->  here no lemmatization")
+            all_unique_lemmas.append(unique_lemmas)
+            return
 
         for entry in db.get_collection('words').find({"oraccWords.guideWord": oracc_guideword}, {"_id"}):
             unique_lemmas.append(entry['_id'])
@@ -178,24 +185,26 @@ def get_ebl_lemmata(oracc_lemma,oracc_guideword,all_unique_lemmas):
 
             except:
                 not_lemmatized[oracc_lemma] = True
+
                 if debug:
                     print(
                         "Incompatible lemmatization: No citation form found in the glossary for '" + oracc_lemma + "'")
 
+        # all attempts to find a ebl lemma failed
         if len(unique_lemmas) == 0:
-            wrong_lemmatization = True
             not_lemmatized[oracc_lemma] = True
-            unique_lemmas.append(entry['_id'])
+            print("Incompatible lemmatization: No eBL word found to oracc lemma or guide word (" + oracc_lemma + " : " + oracc_guideword + ")")
 
-            raise LemmatizationError(
-                "Incompatible lemmatization: No eBL word found to oracc lemma or guide word (" + oracc_lemma + " : " + oracc_guideword + ")")
-
-        else:
-            all_unique_lemmas.append(unique_lemmas)
+        all_unique_lemmas.append(unique_lemmas)
 
     except Exception as e:
         if debug:
             print(e)
+
+    with open(args.output + "/not_lemmatized_" + filename + ".txt", "w", encoding='utf8') as outputfile:
+        for key in not_lemmatized:
+            outputfile.write(key + "\n")
+
 
 def parse_glossary(args):
 
@@ -309,37 +318,57 @@ if __name__ == '__main__':
                                 oracc_guideword = oracc_guideword.split("//")[0]
 
                             # get unique lemmata from ebl database
-                            get_ebl_lemmata(oracc_lemma,oracc_guideword,all_unique_lemmas)
+                            get_ebl_lemmata(oracc_lemma,oracc_guideword,last_transliteration,all_unique_lemmas)
 
+                        print("transliteration", last_transliteration_line)
+                        print("ebl transliteration", last_transliteration, len(last_transliteration))
+                        print("all_unique_lemmata", all_unique_lemmas, len(all_unique_lemmas))
 
-                        # join translation and lemma line:
+                        # join oracc_word and ebl unique lemmata
+                        oracc_word_ebl_lemmas = dict()
                         cnt = 0
-                        print("transliteration" , last_transliteration_line)
-                        print("ebl transliteration" , last_transliteration, len(last_transliteration))
-                        print("all_unique_lemmata" , all_unique_lemmas, len(all_unique_lemmas))
-                        print("----------------------------------------------------------------------")
-
-                        # only create lemmatization entry if both arrays have equal length?
-                        for word in last_transliteration:
-                            line['value'] = last_transliteration[cnt]
-                            lemma_line.append({"value": word, "uniqueLemma": all_unique_lemmas[cnt]})
+                        if debug:
+                            if len(last_transliteration) != len(all_unique_lemmas):
+                                print("ARRAYS DON'T HAVE EQUAL LENGTH!!!")
+                        for oracc_word in last_transliteration:
+                            oracc_word_ebl_lemmas[oracc_word] = all_unique_lemmas[cnt]
                             cnt += 1
 
-                        result['lemmatization'].append(lemma_line)
+                        print("oracc_word_ebl_lemmas: ",oracc_word_ebl_lemmas)
+                        print("----------------------------------------------------------------------")
+
+                        # join translation and lemma line:
+                        # cnt = 0
+
+                        #ebl_lines = get_ebl_transliteration(line['c_line'])
+
+                        #ebl_lemmatizable_words = []
+                        #for ebl_word in ebl_lines[0]['content']:
+
+                        #    if "lemmatizable" in ebl_word and not ebl_word['cleanValue'] == "DIŠ":
+                        #        ebl_lemmatizable_words.append(ebl_word['cleanValue'])
+
+                        #
+                        # # only create lemmatization entry if both arrays have equal length?
+                        # for word in last_transliteration:
+                        #     line['value'] = last_transliteration[cnt]
+                        #     lemma_line.append({"value": word, "uniqueLemma": all_unique_lemmas[cnt]})
+                        #     cnt += 1
+                        #
+                        # result['lemmatization'].append(lemma_line)
 
                     else:
 
                         if line['c_type'] == "text_line":
-                            ebl_lines = get_ebl_transliteration(line['c_line'])
 
-                            ebl_lemmatizable_words = []
-                            for ebl_word in ebl_lines[0]['content']:
+                            # skip "DIŠ"
+                            oracc_words = []
+                            for entry in line['c_array']:
+                                if entry != "DIŠ":
+                                    oracc_words.append(entry)
 
-                                if "lemmatizable" in ebl_word and not ebl_word['cleanValue'] == "DIŠ":
-                                    ebl_lemmatizable_words.append(ebl_word['cleanValue'])
-
-                            last_transliteration = ebl_lemmatizable_words
                             last_transliteration_line = line['c_line']
+                            last_transliteration = oracc_words
 
                         result['transliteration'].append(line['c_line'])
 
@@ -349,9 +378,7 @@ if __name__ == '__main__':
                 with open(args.output + "/" + filename+".json", "w", encoding='utf8') as outputfile:
                     json.dump(result,outputfile,ensure_ascii=False)
 
-                with open(args.output + "/not_lemmatized_" + filename+".txt", "w", encoding='utf8') as outputfile:
-                    for key in not_lemmatized:
-                        outputfile.write(key+"\n")
+
 
 
 
