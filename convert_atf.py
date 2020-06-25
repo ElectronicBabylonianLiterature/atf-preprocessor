@@ -127,6 +127,40 @@ def get_ebl_transliteration(line):
 
     return r.json()['text']['lines']
 
+def parse_glossary(args):
+
+    lemmas_cfforms = dict()
+    cfforms_senses = dict()
+    cfform_guideword = dict()
+
+    with open(args.glossary, "r", encoding='utf8') as f:
+        for line in f.readlines():
+
+            if line.startswith("@entry"):
+                split = line.split(" ")
+                cfform = split[1]
+                guidword = split[2].rstrip("]").lstrip("[")
+                cfform_guideword[cfform] = guidword
+
+            if line.startswith("@form"):
+                split = line.split(" ")
+                lemma = split[2].lstrip("$").rstrip("\n")
+                lemmas_cfforms[lemma] = cfform.strip()
+
+            if line.startswith("@sense"):
+                split = line.split(" ")
+
+                for s in split:
+                    if s in POS_TAGS:
+                        pos_tag = s
+
+                split2 = line.split(pos_tag)
+                sense = split2[1].rstrip("\n")
+                if not cfform in cfforms_senses:
+                    cfforms_senses[cfform] = [sense.strip()]
+                else:
+                    cfforms_senses[cfform].append(sense.strip())
+    return lemmas_cfforms,cfforms_senses,cfform_guideword
 
 if __name__ == '__main__':
 
@@ -158,38 +192,9 @@ if __name__ == '__main__':
 
     debug = args.verbose
 
-    lemmas_cfforms = dict()
-    cfforms_senses = dict()
-    cfform_guideword = dict()
 
-    # read glossary
-    with open(args.glossary, "r", encoding='utf8') as f:
-        for line in f.readlines():
-
-            if line.startswith("@entry"):
-                split = line.split(" ")
-                cfform = split[1]
-                guidword = split[2].rstrip("]").lstrip("[")
-                cfform_guideword[cfform] = guidword
-
-            if line.startswith("@form"):
-                split = line.split(" ")
-                lemma = split[2].lstrip("$").rstrip("\n")
-                lemmas_cfforms[lemma] = cfform.strip()
-
-            if line.startswith("@sense"):
-                split = line.split(" ")
-
-                for s in split:
-                    if s in POS_TAGS:
-                        pos_tag = s
-
-                split2 = line.split(pos_tag)
-                sense = split2[1].rstrip("\n")
-                if not cfform in cfforms_senses:
-                    cfforms_senses[cfform] = [sense.strip()]
-                else:
-                    cfforms_senses[cfform].append(sense.strip())
+    # parse glossary
+    lemmas_cfforms, cfforms_senses, cfform_guideword = parse_glossary(args)
 
 
     # read atf files from input folder
@@ -240,10 +245,15 @@ if __name__ == '__main__':
                                     if debug:
                                        print("Incompatible lemmatization: No guide word to oracc lemma '"+oracc_lemma+"' present using original value")
 
+
                                 for entry in db.get_collection('words').find({"oraccWords.guideWord": oracc_guideword},{"_id"}):
                                     unique_lemmas.append(entry['_id'])
 
                                 for entry in db.get_collection('words').find({"oraccWords.lemma": oracc_lemma},{"_id"}):
+                                    if entry['_id'] not in unique_lemmas:
+                                        unique_lemmas.append(entry['_id'])
+
+                                for entry in db.get_collection('words').find({"guideWord": oracc_guideword}, {"_id"}):
                                     if entry['_id'] not in unique_lemmas:
                                         unique_lemmas.append(entry['_id'])
 
@@ -267,6 +277,11 @@ if __name__ == '__main__':
                                             for entry in db.get_collection('words').find({"oraccWords.lemma": oracc_lemma}, {"_id"}):
                                                 if entry['_id'] not in unique_lemmas:
                                                     unique_lemmas.append(entry['_id'])
+
+                                            for entry in db.get_collection('words').find({"guideWord": oracc_guideword}, {"_id"}):
+                                                if entry['_id'] not in unique_lemmas:
+                                                    unique_lemmas.append(entry['_id'])
+
 
                                     except:
                                         not_lemmatized[oracc_lemma] = True
