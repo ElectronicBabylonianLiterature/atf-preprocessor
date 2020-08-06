@@ -175,7 +175,7 @@ class ATF_Preprocessor:
             # try to parse line with ebl-parser
             tree = self.EBL_PARSER.parse(atf)
 
-            # words serializer oracc parser -> deperecated
+            # words serializer oracc parser
             tree = self.ORACC_PARSER.parse(atf)
             words_serializer = Get_Words()
             words_serializer.result = []
@@ -202,7 +202,7 @@ class ATF_Preprocessor:
                 if debug:
                     print("converting " + tree.data)
 
-                #print(tree.pretty())
+                print(tree.pretty())
 
                 if tree.data == "lem_line":
                     lemmas_and_guidewords_serializer = Get_Lemma_Values_and_Guidewords()
