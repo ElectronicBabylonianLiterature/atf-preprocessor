@@ -117,7 +117,7 @@ class TestConverter(unittest.TestCase):
 
 def get_ebl_transliteration(line):
 
-    time.sleep(1)
+    time.sleep(2)
     dict = {}
     dict['notes'] = ""
     dict['transliteration'] = line
@@ -142,9 +142,11 @@ def get_ebl_lemmata(oracc_lemma,oracc_guideword,last_transliteration,all_unique_
         if oracc_lemma == "X":
             if debug:
                 print(
-                    "Oracc lemma was 'X' ->  here no lemmatization")
+                    "Oracc lemma was '"+oracc_lemma+"' ->  here no lemmatization")
             all_unique_lemmas.append(unique_lemmas)
             return
+
+
 
         for entry in db.get_collection('words').find({"oraccWords.guideWord": oracc_guideword}, {"_id"}):
             unique_lemmas.append(entry['_id'])
