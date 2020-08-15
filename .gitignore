@@ -3,4 +3,5 @@ test-files/
 output/
 __pycache__
 .env
+convert/
 notes.txt
