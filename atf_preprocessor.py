@@ -202,7 +202,7 @@ class ATF_Preprocessor:
                 if debug:
                     print("converting " + tree.data)
 
-                print(tree.pretty())
+                #print(tree.pretty())
 
                 if tree.data == "lem_line":
                     lemmas_and_guidewords_serializer = Get_Lemma_Values_and_Guidewords()
